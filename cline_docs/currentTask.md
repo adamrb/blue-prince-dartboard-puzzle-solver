@@ -7,6 +7,7 @@
   - ✅ Update `vite.config.ts` base path to match new repository name
   - ✅ Update `package.json` name to match new repository name
   - ✅ Modernize GitHub Actions workflow with latest action versions
+  - ✅ Update GitHub Actions components to v4 to fix deprecated dependency issue
 - ✅ Prepare for repository renaming to "blue-prince-dartboard-puzzle-solver"
 
 ## Relevant Context
@@ -17,6 +18,7 @@ The following key updates were made:
 - Updated the project name in package.json
 - Upgraded GitHub Actions workflow with latest action versions to resolve artifact upload errors
 - Updated Node.js version from 18 to 20 in the workflow
+- Updated GitHub Actions components to v4 to resolve the "Missing download info for actions/upload-artifact@v3" error (these actions were deprecated on January 30, 2025)
 
 ## Next Steps
 1. Verify successful GitHub Pages deployment after recent fixes
