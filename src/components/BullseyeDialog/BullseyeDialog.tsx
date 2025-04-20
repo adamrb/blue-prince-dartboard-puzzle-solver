@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BullseyeActionType, BullseyeColor, BullseyeState } from '../../types/DartBoard';
+import { BullseyeState } from '../../types/DartBoard';
 import { getBullseyeActionSymbol, getSymbolScaling } from '../../utils/dartboardUtils';
 import styles from './BullseyeDialog.module.css';
 

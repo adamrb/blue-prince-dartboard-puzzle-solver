@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { DartBoardSegment, DartBoardConfig, BullseyeState, OuterRingState } from '../../types/DartBoard';
+import { DartBoardSegment, DartBoardConfig, BullseyeState } from '../../types/DartBoard';
 import { 
   createSegmentPath, 
   calcNumberPosition, 
   initializeDartBoardSegments,
   getNextOperation,
   getNextOuterRingState,
-  getOperationColor,
   initializeBullseyeState,
   getBullseyeActionSymbol,
   getSymbolScaling,
@@ -177,16 +176,6 @@ const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBulls
     setBullseyeDialogOpen(true);
   };
   
-  // Get operation class for bullseye
-  const getBullseyeOperationClass = (part: 'outerBullseye' | 'innerBullseye') => {
-    const operation = bullseye[part].operation;
-    if (operation === 'addition') return styles.operationAddition;
-    if (operation === 'subtraction') return styles.operationSubtraction;
-    if (operation === 'multiplication') return styles.operationMultiplication;
-    if (operation === 'division') return styles.operationDivision;
-    return '';
-  };
-
   // Calculate angle for each segment
   const segmentAngle = 360 / boardConfig.segmentCount;
 

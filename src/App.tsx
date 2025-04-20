@@ -11,7 +11,7 @@ function App() {
   const [bullseye, setBullseye] = useState<BullseyeState>(initializeBullseyeState());
   
   // Default ring widths as percentages of the board radius
-  const [ringWidths, setRingWidths] = useState({
+  const [ringWidths] = useState({
     outerRing: 10,     // 5% of radius for outer clickable ring
     numberRing: 30,   // 17% of radius for number ring
     doubleRing: 6,    // 6% of radius for double scoring
@@ -21,11 +21,6 @@ function App() {
     bullseye: 12,     // 12% of radius for bullseye
     bullseyeBorder: 10 // 10% of bullseye width is the border
   });
-
-  // Handle slider changes
-  const handleWidthChange = (ring: keyof typeof ringWidths, value: number) => {
-    setRingWidths(prev => ({ ...prev, [ring]: value }));
-  };
 
   // Create dartboard configuration
   const dartboardConfig: Partial<DartBoardConfig> = {

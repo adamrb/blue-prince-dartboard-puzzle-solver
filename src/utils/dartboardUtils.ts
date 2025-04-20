@@ -558,7 +558,6 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
   // Apply modifier to first number if needed
   const { 
     modifiedNumber: modifiedFirstNumber, 
-    skipOperation: skipFirst, 
     modifierText: firstModifierText 
   } = applyNumberModifier(firstNumber, firstNumberModifier);
   
