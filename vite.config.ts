@@ -4,5 +4,5 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/billiard-puzzle-solver/',
+  base: '/blue-prince-dartboard-puzzle-solver/',
 })
