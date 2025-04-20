@@ -63,6 +63,16 @@
   font-size: 0.95rem;
 }
 
+.multilineStep {
+  margin: 6px 0;
+}
+
+.stepIndented {
+  margin: 2px 0 2px 20px;
+  font-size: 0.9rem;
+  color: #333;
+}
+
 .number {
   font-weight: bold;
   color: #000000;

@@ -42,6 +42,8 @@ const PuzzleSolver: React.FC<PuzzleSolverProps> = ({ segments, bullseye }) => {
             <div key={index} className={styles.step}>
               {index === 0 ? (
                 <p>Starting with: <span className={styles.number}>{step}</span></p>
+              ) : step.startsWith('  ') ? (
+                <p className={styles.stepIndented}>{step}</p>
               ) : (
                 <p>{step}</p>
               )}
