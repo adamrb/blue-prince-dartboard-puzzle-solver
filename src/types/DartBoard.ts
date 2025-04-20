@@ -1,5 +1,6 @@
 export interface DartBoardSegmentPart {
   operation: 'addition' | 'subtraction' | 'multiplication' | 'division' | null;
+  isPartial?: boolean; // Indicates if segment should be 1/3 filled
 }
 
 // Outer ring state type

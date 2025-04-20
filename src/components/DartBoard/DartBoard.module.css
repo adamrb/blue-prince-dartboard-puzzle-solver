@@ -151,6 +151,14 @@
   stroke-width: 0.5px;
 }
 
+/* Invisible segment for right-click handling */
+.invisibleSegment {
+  fill: transparent;
+  stroke: none;
+  pointer-events: auto;
+  cursor: context-menu;
+}
+
 /* Outer Ring State Indicators */
 .outerRingCross line {
   stroke: white;

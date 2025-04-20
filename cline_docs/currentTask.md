@@ -1,33 +1,36 @@
-# Current Task: Add GitHub Source Link
+# Current Task: Implement Partial (1/3) Segment Shading
 
 ## Current Objectives
-- ✅ Add a GitHub source link to the application
-  - ✅ Update the footer section in App.tsx to include a link to the GitHub repository
-  - ✅ Style the GitHub link in App.css to match the application's design
+- ✅ Implement 1/3 segment shading functionality
+  - ✅ Create a SegmentDialog component for color and fill type selection
+  - ✅ Add SVG masking for partial (1/3) segment visualization
+  - ✅ Update calculation logic to use 1/3 of number values for partially filled segments
+  - ✅ Improve PuzzleSolver instructions to explain the new feature
 
 ## Relevant Context
-We've added a link to the GitHub repository in the application footer to make the source code easily accessible to users. This allows players of The Blue Prince who find the tool useful to explore how it was built or potentially contribute improvements.
+We've added the ability to shade only 1/3 of a dartboard segment and use 1/3 of the number value in calculations. This feature enhances puzzle-solving capabilities by allowing more nuanced operations. The implementation includes a dialog-based approach for better user experience, similar to the BullseyeDialog component.
 
 Key changes:
-- Added a link to the GitHub repository (https://github.com/adamrb/blue-prince-dartboard-puzzle-solver/) in the footer section of App.tsx
-- Added appropriate styling for the source code link in App.css
+- Added a new SegmentDialog component that allows users to select:
+  - The operation color (blue, yellow, pink, purple)
+  - Whether to use full or 1/3 fill for the segment
+- Implemented SVG masking to visually display segments with only 1/3 filled
+- Updated the calculation logic in dartboardUtils.ts to handle the partial segments
+- Added a special parameter to applyOperation to divide numbers by 3 when a segment is marked as partial
+- Updated the PuzzleSolver component's instructions to include information about partial segments
 
 ## Next Steps
-1. Consider adding GitHub Stars counter or other GitHub-related information
-2. Update project README with recent developments
-3. Test the application to ensure the link works correctly
-4. Consider adding a more prominent "Fork me on GitHub" banner for increased visibility
+1. Consider adding more fill types (e.g., 2/3 or 1/2)
+2. Add tooltips to explain the partial segment functionality to new users
+3. Test the application with various puzzle scenarios that use the partial fill feature
+4. Add this feature to the project README
 
 ## Previous Task
-Successfully fixed the "repeat x times" functionality in the dartboard puzzle solver by implementing the correct logic for repeated operations:
-- For "repeat 2/3/4 times" operations:
-  - Addition: Add the number x times (multiply by x)
-  - Subtraction: Subtract the number x times (multiply by x)
-  - Multiplication: Multiply by the number x times (raise to power x)
-  - Division: Divide by the number x times (raise to power x)
+Added a GitHub source link to the application by updating the footer section in App.tsx and styling it in App.css to match the application's design.
 
 ## Related Roadmap Tasks
 This work addresses the following goals from projectRoadmap.md:
 - Create a web-based dart board puzzle solver for The Blue Prince game
 - Allow users to click and mark segments to solve puzzles
 - Puzzle calculations function correctly following the game's rules
+- Enhance the UI for improved puzzle solving

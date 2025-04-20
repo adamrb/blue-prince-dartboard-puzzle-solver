@@ -1,0 +1,198 @@
+.dialogOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.dialogContent {
+  background-color: #2d2d2d;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 90%;
+  width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  color: #fff;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.section h3 {
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+/* Operation buttons styles */
+.operationOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.operationButton {
+  padding: 10px 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  flex: 1 0 calc(50% - 8px);
+  min-width: 150px;
+}
+
+.blueButton {
+  background-color: #2196F3;
+  color: white;
+}
+
+.yellowButton {
+  background-color: #FFEB3B;
+  color: black;
+}
+
+.pinkButton {
+  background-color: #FF4081;
+  color: white;
+}
+
+.purpleButton {
+  background-color: #9C27B0;
+  color: white;
+}
+
+.selected {
+  box-shadow: 0 0 0 3px white;
+  transform: scale(1.05);
+  font-weight: bold;
+}
+
+/* Fill options styles */
+.fillOptions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.fillButton {
+  padding: 10px 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  flex: 1;
+  background-color: #444;
+  color: white;
+}
+
+/* Preview section */
+.preview {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.previewContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.equation {
+  font-size: 16px;
+  color: #ddd;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+/* Button row for clear button */
+.buttonRow {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* Clear color button */
+.clearButton {
+  background-color: transparent;
+  border: 2px solid #f44336;
+  color: #f44336;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: bold;
+}
+
+.clearButton:hover {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+/* Action buttons */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+  gap: 12px;
+}
+
+.cancelButton {
+  background-color: transparent;
+  border: 1px solid #ccc;
+  color: #ccc;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.saveButton {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.saveButton:hover {
+  background-color: #3e8e41;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .dialogContent {
+    width: 95%;
+    padding: 16px;
+  }
+  
+  .operationButton, .fillButton {
+    font-size: 13px;
+    padding: 8px;
+  }
+  
+  .operationOptions {
+    flex-direction: column;
+  }
+  
+  .operationButton {
+    flex: 1 0 auto;
+  }
+}

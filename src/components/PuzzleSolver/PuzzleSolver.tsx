@@ -24,10 +24,11 @@ const PuzzleSolver: React.FC<PuzzleSolverProps> = ({ segments, bullseye }) => {
         </p>
         <p className={styles.hint}>Work from inside out (closest to bullseye moving outward).</p>
         <p className={styles.hint}>
-          <strong>Outer Ring Special Rules:</strong><br />
+          <strong>Special Rules:</strong><br />
+          • <strong>Partial Segment (1/3 shaded):</strong> Use 1/3 of the number value<br />
           • <strong>Cross (✕):</strong> Ignore all operations for this number<br />
           • <strong>Diagonal Line (/):</strong> Divide the number by 2<br />
-          • <strong>Two Red Dots (••):</strong> Double the number
+          • <strong>Two Red Dots (••):</strong> Repeat operation 2 times
         </p>
       </div>
     );

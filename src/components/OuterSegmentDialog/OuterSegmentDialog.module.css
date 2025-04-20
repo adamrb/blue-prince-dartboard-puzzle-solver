@@ -1,0 +1,136 @@
+/* Dialog Overlay - covers the entire screen with a semi-transparent background */
+.dialogOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Dialog Content - the visible dialog box */
+.dialogContent {
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Section styling */
+.section {
+  margin-bottom: 20px;
+}
+
+.section h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 18px;
+  color: #333;
+}
+
+/* Button styling */
+.operationButton,
+.fillButton,
+.outerRingButton,
+.clearButton,
+.cancelButton,
+.saveButton {
+  padding: 10px 15px;
+  margin: 5px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+/* Grid layout improved for outerRingOptions */
+
+/* Outer ring options styling */
+.outerRingOptions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.outerRingButton {
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  text-align: left;
+  height: 60px;
+  justify-content: space-between;
+}
+
+.symbolLabel {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.description {
+  font-size: 12px;
+  color: #666;
+}
+
+
+/* Action buttons styling */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.cancelButton {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.saveButton {
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* Selected state styling */
+.selected {
+  border: 2px solid #2196F3;
+  box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
+}
+
+/* Hover effects */
+.outerRingButton:hover {
+  opacity: 0.9;
+}
+
+.cancelButton:hover {
+  background-color: #e0e0e0;
+}
+
+.saveButton:hover {
+  background-color: #43A047;
+}
+
+@media (max-width: 600px) {
+  .dialogContent {
+    padding: 16px;
+    width: 95%;
+  }
+  
+  .operationButton {
+    flex-basis: 100%;
+  }
+  
+  .outerRingOptions {
+    grid-template-columns: 1fr;
+  }
+}

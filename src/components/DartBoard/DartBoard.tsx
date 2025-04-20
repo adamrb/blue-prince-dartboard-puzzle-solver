@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { DartBoardSegment, DartBoardConfig, BullseyeState } from '../../types/DartBoard';
+import { DartBoardSegment, DartBoardConfig, BullseyeState, DartBoardSegmentPart, OuterRingState } from '../../types/DartBoard';
 import { 
   createSegmentPath, 
   calcNumberPosition, 
@@ -14,6 +14,8 @@ import {
 } from '../../utils/dartboardUtils';
 import styles from './DartBoard.module.css';
 import BullseyeDialog from '../BullseyeDialog/BullseyeDialog';
+import SegmentDialog from '../SegmentDialog/SegmentDialog';
+import OuterSegmentDialog from '../OuterSegmentDialog/OuterSegmentDialog';
 
 interface DartBoardProps {
   config?: Partial<DartBoardConfig>;
@@ -43,6 +45,16 @@ const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBulls
   const boardConfig = { ...DEFAULT_CONFIG, ...config };
   const [segments, setSegments] = useState<DartBoardSegment[]>([]);
   const [bullseye, setBullseye] = useState(initializeBullseyeState());
+  
+  // State for dialogs
+  const [bullseyeDialogOpen, setBullseyeDialogOpen] = useState(false);
+  const [segmentDialogOpen, setSegmentDialogOpen] = useState(false);
+  const [outerSegmentDialogOpen, setOuterSegmentDialogOpen] = useState(false);
+  const [selectedSegment, setSelectedSegment] = useState<{
+    id: number;
+    part: 'innerSegment' | 'tripleRing' | 'mainSegment' | 'doubleRing' | 'outerRing';
+    number: number;
+  } | null>(null);
   
   // Constants for SVG drawing
   const centerX = boardConfig.boardRadius;
@@ -130,31 +142,71 @@ const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBulls
     }
   }, [boardConfig.numberOrder, onSegmentsChange]);
 
-  // Handle segment part click - cycle through operations or outer ring states
+  // Handle bullseye click - open configuration dialog
+  const handleBullseyeClick = () => {
+    setBullseyeDialogOpen(true);
+  };
+
+  // Handle segment part click - open appropriate dialog based on segment part
   const handleSegmentPartClick = (id: number, part: 'outerRing' | 'doubleRing' | 'mainSegment' | 'tripleRing' | 'innerSegment') => {
+    const segment = segments.find(s => s.id === id);
+    if (segment) {
+      setSelectedSegment({ id, part, number: segment.number });
+      
+      // Use OuterSegmentDialog for outer ring, and regular SegmentDialog for other parts
+      if (part === 'outerRing') {
+        setOuterSegmentDialogOpen(true);
+      } else {
+        setSegmentDialogOpen(true);
+      }
+    }
+  };
+
+  // Handle segment dialog save
+  const handleSegmentDialogSave = (updatedState: DartBoardSegmentPart) => {
+    if (!selectedSegment) return;
+    
     setSegments(prevSegments => {
       const updatedSegments = prevSegments.map(segment => {
-        if (segment.id === id) {
-          if (part === 'outerRing') {
-            // For outer ring, we cycle through states instead of operations
-            return {
-              ...segment,
-              outerRing: {
-                ...segment.outerRing,
-                outerRingState: getNextOuterRingState(segment.outerRing.outerRingState),
-                operation: segment.outerRing.operation // Keep the current operation
-              }
-            };
-          } else {
-            // For other parts, cycle through operations as before
-            return {
-              ...segment,
-              [part]: {
-                ...segment[part],
-                operation: getNextOperation(segment[part].operation)
-              }
-            };
-          }
+        if (segment.id === selectedSegment.id) {
+          return {
+            ...segment,
+            [selectedSegment.part]: {
+              ...segment[selectedSegment.part],
+              operation: updatedState.operation,
+              isPartial: updatedState.isPartial,
+              // For outer ring, we need to preserve the outer ring state
+              ...(selectedSegment.part === 'outerRing' ? { outerRingState: segment.outerRing.outerRingState } : {})
+            }
+          };
+        }
+        return segment;
+      });
+      
+      // Notify parent component of the change
+      if (onSegmentsChange) {
+        onSegmentsChange(updatedSegments);
+      }
+      
+      return updatedSegments;
+    });
+  };
+  
+  // Handle outer segment dialog save
+  const handleOuterSegmentDialogSave = (updatedState: DartBoardSegmentPart & { outerRingState: OuterRingState }) => {
+    if (!selectedSegment) return;
+    
+    setSegments(prevSegments => {
+      const updatedSegments = prevSegments.map(segment => {
+        if (segment.id === selectedSegment.id) {
+          return {
+            ...segment,
+            outerRing: {
+              operation: updatedState.operation,
+              isPartial: updatedState.isPartial,
+              outerRingState: updatedState.outerRingState
+            }
+          };
         }
         return segment;
       });
@@ -168,12 +220,29 @@ const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBulls
     });
   };
 
-  // State for bullseye dialog
-  const [bullseyeDialogOpen, setBullseyeDialogOpen] = useState(false);
-  
-  // Handle bullseye click - open configuration dialog
-  const handleBullseyeClick = () => {
-    setBullseyeDialogOpen(true);
+  // Handle outer ring state change
+  const handleOuterRingStateChange = (id: number) => {
+    setSegments(prevSegments => {
+      const updatedSegments = prevSegments.map(segment => {
+        if (segment.id === id) {
+          return {
+            ...segment,
+            outerRing: {
+              ...segment.outerRing,
+              outerRingState: getNextOuterRingState(segment.outerRing.outerRingState)
+            }
+          };
+        }
+        return segment;
+      });
+      
+      // Notify parent component of the change
+      if (onSegmentsChange) {
+        onSegmentsChange(updatedSegments);
+      }
+      
+      return updatedSegments;
+    });
   };
   
   // Calculate angle for each segment
@@ -530,14 +599,119 @@ const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBulls
       }
     };
 
+    // Create partial masks for 1/3 coloring
+    const createPartialMaskId = (segmentId: number, partType: string) => `mask-${segmentId}-${partType}`;
+
+    // Render masks for all segment parts
+    const renderPartialMasks = () => {
+      return (
+        <defs>
+          {/* Inner Segment Mask - middle third */}
+          <mask id={createPartialMaskId(segment.id, 'innerSegment')}>
+            <rect x={0} y={0} width={svgSize} height={svgSize} fill="black" />
+            <path 
+              d={createSegmentPath(
+                centerX, 
+                centerY, 
+                innerSegmentInnerRadius, 
+                innerSegmentOuterRadius, 
+                startAngle + segmentAngle/3, // Start at 1/3 of the way through
+                startAngle + (2*segmentAngle/3) // End at 2/3 of the way through (middle third)
+              )}
+              fill="white" 
+            />
+          </mask>
+
+          {/* Triple Ring Mask - middle third */}
+          <mask id={createPartialMaskId(segment.id, 'tripleRing')}>
+            <rect x={0} y={0} width={svgSize} height={svgSize} fill="black" />
+            <path 
+              d={createSegmentPath(
+                centerX, 
+                centerY, 
+                tripleRingInnerRadius, 
+                tripleRingOuterRadius, 
+                startAngle + segmentAngle/3,
+                startAngle + (2*segmentAngle/3)
+              )}
+              fill="white" 
+            />
+          </mask>
+
+          {/* Main Segment Mask - middle third */}
+          <mask id={createPartialMaskId(segment.id, 'mainSegment')}>
+            <rect x={0} y={0} width={svgSize} height={svgSize} fill="black" />
+            <path 
+              d={createSegmentPath(
+                centerX, 
+                centerY, 
+                mainSegmentInnerRadius, 
+                mainSegmentOuterRadius, 
+                startAngle + segmentAngle/3,
+                startAngle + (2*segmentAngle/3)
+              )}
+              fill="white" 
+            />
+          </mask>
+
+          {/* Double Ring Mask - middle third */}
+          <mask id={createPartialMaskId(segment.id, 'doubleRing')}>
+            <rect x={0} y={0} width={svgSize} height={svgSize} fill="black" />
+            <path 
+              d={createSegmentPath(
+                centerX, 
+                centerY, 
+                doubleRingInnerRadius, 
+                doubleRingOuterRadius, 
+                startAngle + segmentAngle/3,
+                startAngle + (2*segmentAngle/3)
+              )}
+              fill="white" 
+            />
+          </mask>
+
+          {/* Outer Ring Mask - middle third */}
+          <mask id={createPartialMaskId(segment.id, 'outerRing')}>
+            <rect x={0} y={0} width={svgSize} height={svgSize} fill="black" />
+            <path 
+              d={createSegmentPath(
+                centerX, 
+                centerY, 
+                outerRingInnerRadius, 
+                outerRingOuterRadius, 
+                startAngle + segmentAngle/3,
+                startAngle + (2*segmentAngle/3)
+              )}
+              fill="white" 
+            />
+          </mask>
+        </defs>
+      );
+    };
+
     return (
       <g key={segment.id}>
+        {/* SVG Masks for partial segments */}
+        {renderPartialMasks()}
+        
         {/* Outer ring segment (beyond the numbers) */}
         <path
           d={outerRingPath}
           className={`${styles.segment} ${baseColor} ${getOperationClass('outerRing')}`}
           onClick={() => handleSegmentPartClick(segment.id, 'outerRing')}
+          mask={segment.outerRing.isPartial ? `url(#${createPartialMaskId(segment.id, 'outerRing')})` : undefined}
           aria-label={`Outer ring ${segment.number}`}
+        />
+        
+        {/* Right-click on outer ring changes state */}
+        <path
+          d={outerRingPath}
+          className={`${styles.segment} ${styles.invisibleSegment}`}
+          onClick={() => handleSegmentPartClick(segment.id, 'outerRing')}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            handleOuterRingStateChange(segment.id);
+          }}
         />
         
         {/* Outer ring state symbol */}
@@ -548,6 +722,7 @@ const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBulls
           d={doubleRingPath}
           className={`${styles.segment} ${index % 2 === 0 ? styles.doubleRingDarkGrey : styles.doubleRingLightGrey} ${getOperationClass('doubleRing')}`}
           onClick={() => handleSegmentPartClick(segment.id, 'doubleRing')}
+          mask={segment.doubleRing.isPartial ? `url(#${createPartialMaskId(segment.id, 'doubleRing')})` : undefined}
           aria-label={`Double ${segment.number}`}
         />
         
@@ -556,6 +731,7 @@ const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBulls
           d={mainSegmentPath}
           className={`${styles.segment} ${baseColor} ${getOperationClass('mainSegment')}`}
           onClick={() => handleSegmentPartClick(segment.id, 'mainSegment')}
+          mask={segment.mainSegment.isPartial ? `url(#${createPartialMaskId(segment.id, 'mainSegment')})` : undefined}
           aria-label={`Segment ${segment.number} main area`}
         />
         
@@ -564,6 +740,7 @@ const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBulls
           d={tripleRingPath}
           className={`${styles.segment} ${index % 2 === 0 ? styles.tripleRingDarkGrey : styles.tripleRingLightGrey} ${getOperationClass('tripleRing')}`}
           onClick={() => handleSegmentPartClick(segment.id, 'tripleRing')}
+          mask={segment.tripleRing.isPartial ? `url(#${createPartialMaskId(segment.id, 'tripleRing')})` : undefined}
           aria-label={`Triple ${segment.number}`}
         />
         
@@ -572,6 +749,7 @@ const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBulls
           d={innerSegmentPath}
           className={`${styles.segment} ${baseColor} ${getOperationClass('innerSegment')}`}
           onClick={() => handleSegmentPartClick(segment.id, 'innerSegment')}
+          mask={segment.innerSegment.isPartial ? `url(#${createPartialMaskId(segment.id, 'innerSegment')})` : undefined}
           aria-label={`Segment ${segment.number} inner area`}
         />
         
@@ -751,6 +929,29 @@ const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBulls
           }
         }}
       />
+
+      {/* Segment configuration dialog */}
+      {selectedSegment && (
+        <SegmentDialog
+          isOpen={segmentDialogOpen}
+          partType={selectedSegment.part}
+          segmentNumber={selectedSegment.number}
+          currentState={segments.find(s => s.id === selectedSegment.id)?.[selectedSegment.part] || { operation: null }}
+          onClose={() => setSegmentDialogOpen(false)}
+          onSave={handleSegmentDialogSave}
+        />
+      )}
+      
+      {/* Outer Segment configuration dialog */}
+      {selectedSegment && selectedSegment.part === 'outerRing' && (
+        <OuterSegmentDialog
+          isOpen={outerSegmentDialogOpen}
+          segmentNumber={selectedSegment.number}
+          currentState={segments.find(s => s.id === selectedSegment.id)?.outerRing || { operation: null, outerRingState: 'normal' }}
+          onClose={() => setOuterSegmentDialogOpen(false)}
+          onSave={handleOuterSegmentDialogSave}
+        />
+      )}
     </div>
   );
 };
