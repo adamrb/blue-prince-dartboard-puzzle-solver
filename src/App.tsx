@@ -31,8 +31,8 @@ function App() {
     <>
       <div className="app-container">
         <header className="app-header">
-          <h1>Dart Board Puzzle Solver</h1>
-          <p>Click on segments to mark operations and solve dartboard puzzles</p>
+          <h1>The Blue Prince: Billiard Room Dartboard Puzzle Solver</h1>
+          <p>An interactive tool to help you solve the mathematical dartboard puzzles in the Billiard Room of "The Blue Prince" video game</p>
         </header>
         
         <div className="main-content">
@@ -49,6 +49,17 @@ function App() {
           </div>
         </div>
         
+        <div className="game-context">
+            <p>In The Blue Prince, players encounter mathematical puzzles requiring precise operations with dart segments:</p>
+            <ul className="context-highlights">
+              <li><strong>Blue segments</strong> represent addition</li>
+              <li><strong>Yellow segments</strong> represent subtraction</li>
+              <li><strong>Pink segments</strong> represent multiplication</li>
+              <li><strong>Purple segments</strong> represent division</li>
+            </ul>
+            <p>This tool follows the game's specific rules, calculating from inner rings outward, to help you find the correct solutions.</p>
+        </div>
+          
         <div className="instructions-container">
           <h2>How to use:</h2>
           <div className="instructions-grid">
@@ -144,6 +155,12 @@ function App() {
             </div>
           </div>
         </div>
+
+        <footer className="app-footer">
+          <p className="attribution">
+            Dart Board icon by Ed Piel from <a href="https://thenounproject.com/browse/icons/term/dart-board/" target="_blank" title="Dart Board Icons">Noun Project</a> (CC BY 3.0)
+          </p>
+        </footer>
 
       </div>
     </>

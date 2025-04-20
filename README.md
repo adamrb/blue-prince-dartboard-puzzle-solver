@@ -38,7 +38,7 @@ The solver follows the same mathematical rules as the game, making it an ideal c
 
 ## Live Demo
 
-Try it now: [The Blue Prince Dartboard Puzzle Solver](https://yourusername.github.io/blue-prince-dartboard-puzzle-solver/)
+Try it now: [The Blue Prince Dartboard Puzzle Solver](https://www.adamrb.com/blue-prince-dartboard-puzzle-solver/)
 
 ## Features
 
@@ -116,6 +116,10 @@ Contributions are welcome! Feel free to submit a Pull Request or open an Issue t
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Attribution
+
+- Dart Board icon by Ed Piel from [Noun Project](https://thenounproject.com/browse/icons/term/dart-board/) (CC BY 3.0)
 
 ## References
 

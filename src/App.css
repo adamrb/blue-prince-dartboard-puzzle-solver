@@ -344,3 +344,64 @@ p {
     padding: 0.75rem;
   }
 }
+
+/* Game context styling */
+.game-context {
+  background-color: #f0f7ff;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  text-align: left;
+  border-left: 4px solid #2196F3;
+}
+
+.game-context p {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.context-highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.5rem;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.context-highlights li {
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Footer styling */
+.app-footer {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eaeaea;
+  width: 100%;
+  text-align: center;
+}
+
+.attribution {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.attribution a {
+  color: #2196F3;
+  text-decoration: none;
+}
+
+.attribution a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .game-context {
+    padding: 0.75rem;
+  }
+  
+  .context-highlights {
+    grid-template-columns: 1fr;
+  }
+}
