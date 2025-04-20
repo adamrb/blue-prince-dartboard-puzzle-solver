@@ -62,78 +62,6 @@ const BullseyeDialog: React.FC<BullseyeDialogProps> = ({
         </div>
 
         <div className={styles.section}>
-          <h3>Inner Symbol (Optional)</h3>
-          <div className={styles.actionOptions}>
-            <button 
-              className={`${styles.actionButton} ${state.innerAction === 'square' ? styles.selected : ''}`}
-              onClick={() => setState({...state, innerAction: state.innerAction === 'square' ? null : 'square'})}
-            >
-              <span>{getBullseyeActionSymbol('square')}</span> Square (n²)
-            </button>
-            <button 
-              className={`${styles.actionButton} ${state.innerAction === 'twoSquares' ? styles.selected : ''}`}
-              onClick={() => setState({...state, innerAction: state.innerAction === 'twoSquares' ? null : 'twoSquares'})}
-            >
-              <span>{getBullseyeActionSymbol('twoSquares')}</span> Two Squares (n⁴)
-            </button>
-            <button 
-              className={`${styles.actionButton} ${state.innerAction === 'diamond' ? styles.selected : ''}`}
-              onClick={() => setState({...state, innerAction: state.innerAction === 'diamond' ? null : 'diamond'})}
-            >
-              <span>{getBullseyeActionSymbol('diamond')}</span> Diamond (reverse)
-            </button>
-            <button 
-              className={`${styles.actionButton} ${state.innerAction === 'singleWavy' ? styles.selected : ''}`}
-              onClick={() => setState({...state, innerAction: state.innerAction === 'singleWavy' ? null : 'singleWavy'})}
-            >
-              <span>{getBullseyeActionSymbol('singleWavy')}</span> Round to 1
-            </button>
-            <button 
-              className={`${styles.actionButton} ${state.innerAction === 'doubleWavy' ? styles.selected : ''}`}
-              onClick={() => setState({...state, innerAction: state.innerAction === 'doubleWavy' ? null : 'doubleWavy'})}
-            >
-              <span>{getBullseyeActionSymbol('doubleWavy')}</span> Round to 10
-            </button>
-            <button 
-              className={`${styles.actionButton} ${state.innerAction === 'tripleWavy' ? styles.selected : ''}`}
-              onClick={() => setState({...state, innerAction: state.innerAction === 'tripleWavy' ? null : 'tripleWavy'})}
-            >
-              <span>{getBullseyeActionSymbol('tripleWavy')}</span> Round to 100
-            </button>
-            <button 
-              className={`${styles.actionButton} ${state.innerAction === 'oneThirdFull' ? styles.selected : ''}`}
-              onClick={() => setState({...state, innerAction: state.innerAction === 'oneThirdFull' ? null : 'oneThirdFull'})}
-            >
-              <span>{getBullseyeActionSymbol('oneThirdFull')}</span> Divide by 3
-            </button>
-            <button 
-              className={`${styles.actionButton} ${state.innerAction === 'twoDots' ? styles.selected : ''}`}
-              onClick={() => setState({...state, innerAction: state.innerAction === 'twoDots' ? null : 'twoDots'})}
-            >
-              <span>{getBullseyeActionSymbol('twoDots')}</span> Repeat 2×
-            </button>
-            <button 
-              className={`${styles.actionButton} ${state.innerAction === 'threeDots' ? styles.selected : ''}`}
-              onClick={() => setState({...state, innerAction: state.innerAction === 'threeDots' ? null : 'threeDots'})}
-            >
-              <span>{getBullseyeActionSymbol('threeDots')}</span> Repeat 3×
-            </button>
-            <button 
-              className={`${styles.actionButton} ${state.innerAction === 'fourDots' ? styles.selected : ''}`}
-              onClick={() => setState({...state, innerAction: state.innerAction === 'fourDots' ? null : 'fourDots'})}
-            >
-              <span>{getBullseyeActionSymbol('fourDots')}</span> Repeat 4×
-            </button>
-            <button 
-              className={`${styles.actionButton} ${state.innerAction === null ? styles.selected : ''}`}
-              onClick={() => setState({...state, innerAction: null})}
-            >
-              None
-            </button>
-          </div>
-        </div>
-
-        <div className={styles.section}>
           <h3>Outer Symbol</h3>
           <div className={styles.actionOptions}>
             <button 
@@ -205,6 +133,78 @@ const BullseyeDialog: React.FC<BullseyeDialogProps> = ({
           </div>
         </div>
         
+        <div className={styles.section}>
+          <h3>Inner Symbol (Optional)</h3>
+          <div className={styles.actionOptions}>
+            <button 
+              className={`${styles.actionButton} ${state.innerAction === 'square' ? styles.selected : ''}`}
+              onClick={() => setState({...state, innerAction: state.innerAction === 'square' ? null : 'square'})}
+            >
+              <span>{getBullseyeActionSymbol('square')}</span> Square (n²)
+            </button>
+            <button 
+              className={`${styles.actionButton} ${state.innerAction === 'twoSquares' ? styles.selected : ''}`}
+              onClick={() => setState({...state, innerAction: state.innerAction === 'twoSquares' ? null : 'twoSquares'})}
+            >
+              <span>{getBullseyeActionSymbol('twoSquares')}</span> Two Squares (n⁴)
+            </button>
+            <button 
+              className={`${styles.actionButton} ${state.innerAction === 'diamond' ? styles.selected : ''}`}
+              onClick={() => setState({...state, innerAction: state.innerAction === 'diamond' ? null : 'diamond'})}
+            >
+              <span>{getBullseyeActionSymbol('diamond')}</span> Diamond (reverse)
+            </button>
+            <button 
+              className={`${styles.actionButton} ${state.innerAction === 'singleWavy' ? styles.selected : ''}`}
+              onClick={() => setState({...state, innerAction: state.innerAction === 'singleWavy' ? null : 'singleWavy'})}
+            >
+              <span>{getBullseyeActionSymbol('singleWavy')}</span> Round to 1
+            </button>
+            <button 
+              className={`${styles.actionButton} ${state.innerAction === 'doubleWavy' ? styles.selected : ''}`}
+              onClick={() => setState({...state, innerAction: state.innerAction === 'doubleWavy' ? null : 'doubleWavy'})}
+            >
+              <span>{getBullseyeActionSymbol('doubleWavy')}</span> Round to 10
+            </button>
+            <button 
+              className={`${styles.actionButton} ${state.innerAction === 'tripleWavy' ? styles.selected : ''}`}
+              onClick={() => setState({...state, innerAction: state.innerAction === 'tripleWavy' ? null : 'tripleWavy'})}
+            >
+              <span>{getBullseyeActionSymbol('tripleWavy')}</span> Round to 100
+            </button>
+            <button 
+              className={`${styles.actionButton} ${state.innerAction === 'oneThirdFull' ? styles.selected : ''}`}
+              onClick={() => setState({...state, innerAction: state.innerAction === 'oneThirdFull' ? null : 'oneThirdFull'})}
+            >
+              <span>{getBullseyeActionSymbol('oneThirdFull')}</span> Divide by 3
+            </button>
+            <button 
+              className={`${styles.actionButton} ${state.innerAction === 'twoDots' ? styles.selected : ''}`}
+              onClick={() => setState({...state, innerAction: state.innerAction === 'twoDots' ? null : 'twoDots'})}
+            >
+              <span>{getBullseyeActionSymbol('twoDots')}</span> Repeat 2×
+            </button>
+            <button 
+              className={`${styles.actionButton} ${state.innerAction === 'threeDots' ? styles.selected : ''}`}
+              onClick={() => setState({...state, innerAction: state.innerAction === 'threeDots' ? null : 'threeDots'})}
+            >
+              <span>{getBullseyeActionSymbol('threeDots')}</span> Repeat 3×
+            </button>
+            <button 
+              className={`${styles.actionButton} ${state.innerAction === 'fourDots' ? styles.selected : ''}`}
+              onClick={() => setState({...state, innerAction: state.innerAction === 'fourDots' ? null : 'fourDots'})}
+            >
+              <span>{getBullseyeActionSymbol('fourDots')}</span> Repeat 4×
+            </button>
+            <button 
+              className={`${styles.actionButton} ${state.innerAction === null ? styles.selected : ''}`}
+              onClick={() => setState({...state, innerAction: null})}
+            >
+              None
+            </button>
+          </div>
+        </div>
+
         <div className={styles.preview}>
           <h3>Preview</h3>
           <div 

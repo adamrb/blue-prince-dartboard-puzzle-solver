@@ -396,6 +396,21 @@ p {
   text-decoration: underline;
 }
 
+.source-code {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.source-code a {
+  color: #1976D2;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.source-code a:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 600px) {
   .game-context {
     padding: 0.75rem;

@@ -160,6 +160,9 @@ function App() {
           <p className="attribution">
             Dart Board icon by Ed Piel from <a href="https://thenounproject.com/browse/icons/term/dart-board/" target="_blank" title="Dart Board Icons">Noun Project</a> (CC BY 3.0)
           </p>
+          <p className="source-code">
+            <a href="https://github.com/adamrb/blue-prince-dartboard-puzzle-solver/" target="_blank" title="Source Code">View source on GitHub</a>
+          </p>
         </footer>
 
       </div>

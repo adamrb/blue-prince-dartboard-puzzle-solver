@@ -1,33 +1,30 @@
-# Current Task: "Repeat X Times" Logic Fix
+# Current Task: Add GitHub Source Link
 
 ## Current Objectives
-- ✅ Fix the "repeat x times" functionality in the dartboard puzzle solver
-  - ✅ Analyze how the feature should work based on The Blue Prince game mechanics
-  - ✅ Implement the correct logic for repeating operations
-  - ✅ Improve the step-by-step display of calculations for better clarity
-- Test the fixed implementation with various puzzle scenarios
+- ✅ Add a GitHub source link to the application
+  - ✅ Update the footer section in App.tsx to include a link to the GitHub repository
+  - ✅ Style the GitHub link in App.css to match the application's design
 
 ## Relevant Context
-We've identified and fixed an issue with the "repeat x times" functionality in the dartboard puzzle solver. The original implementation was cascading operations (applying them sequentially), but based on research into The Blue Prince game mechanics, the correct behavior is:
+We've added a link to the GitHub repository in the application footer to make the source code easily accessible to users. This allows players of The Blue Prince who find the tool useful to explore how it was built or potentially contribute improvements.
 
+Key changes:
+- Added a link to the GitHub repository (https://github.com/adamrb/blue-prince-dartboard-puzzle-solver/) in the footer section of App.tsx
+- Added appropriate styling for the source code link in App.css
+
+## Next Steps
+1. Consider adding GitHub Stars counter or other GitHub-related information
+2. Update project README with recent developments
+3. Test the application to ensure the link works correctly
+4. Consider adding a more prominent "Fork me on GitHub" banner for increased visibility
+
+## Previous Task
+Successfully fixed the "repeat x times" functionality in the dartboard puzzle solver by implementing the correct logic for repeated operations:
 - For "repeat 2/3/4 times" operations:
   - Addition: Add the number x times (multiply by x)
   - Subtraction: Subtract the number x times (multiply by x)
   - Multiplication: Multiply by the number x times (raise to power x)
   - Division: Divide by the number x times (raise to power x)
-
-The implementation now correctly calculates the effective value for repeated operations and applies it once, rather than chaining multiple applications of the same operation.
-
-Key changes:
-- Added a new utility function `applyRepeatedOperation` to calculate the effective value of a repeated operation
-- Updated the `calculateEquation` function to properly handle and display repeating operations
-- Improved the step-by-step explanation in the calculation to show how repeated operations are resolved
-
-## Next Steps
-1. Test the implementation with various puzzle scenarios to ensure correctness
-2. Consider adding visual indication of how repeat operations work in the UI
-3. Update README to document the corrected behavior
-4. Continue code maintenance and address any new TypeScript warnings if they appear
 
 ## Related Roadmap Tasks
 This work addresses the following goals from projectRoadmap.md:
