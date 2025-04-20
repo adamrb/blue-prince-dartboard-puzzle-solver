@@ -1,0 +1,346 @@
+#root {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  text-align: center;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 1rem;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  background-color: white;
+  color: #000000;
+}
+
+/* Compact header */
+.app-header {
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  width: 100%;
+}
+
+.app-header h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.app-header p {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Main content layout for dartboard and puzzle solver */
+.main-content {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+/* Left section (dartboard) */
+.dartboard-section {
+  flex: 2;
+  min-width: 0;
+  max-width: 65%;
+}
+
+/* Right section (puzzle solver) */
+.puzzle-solver-section {
+  flex: 1;
+  min-width: 270px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 1rem;
+  background-color: #f8f8f8;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+p {
+  margin: 0.5rem 0;
+  line-height: 1.5;
+}
+
+/* Instructions styling */
+.instructions-container {
+  margin-top: 1.5rem;
+  width: 100%;
+}
+
+.instructions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+.instruction-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.instruction-card:hover {
+  transform: translateY(-3px);
+}
+
+.instruction-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.step-number {
+  background-color: #1976D2;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.instruction-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  flex-grow: 1;
+}
+
+/* Operation styling */
+.operation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.operation {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.color-indicator {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  margin-right: 0.75rem;
+}
+
+.blue-bg {
+  background-color: #2196F3;
+}
+
+.yellow-bg {
+  background-color: #FFBF00;
+}
+
+.pink-bg {
+  background-color: #FF4081;
+}
+
+.purple-bg {
+  background-color: #9C27B0;
+}
+
+/* Modifier styling */
+.modifier-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.modifier {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.modifier-symbol {
+  display: inline-block;
+  font-weight: bold;
+  width: 24px;
+  height: 24px;
+  text-align: center;
+  margin-right: 0.75rem;
+  background-color: #f0f0f0;
+  border-radius: 50%;
+  line-height: 24px;
+}
+
+/* Bullseye actions styling */
+.bullseye-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+.bullseye-action {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.action-symbol {
+  display: inline-block;
+  font-weight: bold;
+  width: 24px;
+  height: 24px;
+  text-align: center;
+  margin-right: 0.75rem;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  line-height: 24px;
+}
+
+/* Collapsible section styling */
+.collapsible-section {
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.collapsible-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 0;
+}
+
+.collapsible-content {
+  background-color: #f5f5f5;
+  padding: 1rem;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+}
+
+.slider-container {
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.slider-container label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  width: 100%;
+  text-align: left;
+}
+
+.slider-container input[type="range"] {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: #ddd;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.slider-container input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #4CAF50;
+  cursor: pointer;
+}
+
+.slider-container input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #4CAF50;
+  cursor: pointer;
+}
+
+.slider-description {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #000000;
+  margin-top: 0.25rem;
+  text-align: left;
+  width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .main-content {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .dartboard-section {
+    max-width: 100%;
+    width: 100%;
+  }
+  
+  .puzzle-solver-section {
+    max-width: 100%;
+    width: 100%;
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    padding: 0.5rem;
+  }
+  
+  .instructions-container {
+    margin-top: 0.75rem;
+  }
+  
+  .dartboard-section,
+  .puzzle-solver-section {
+    width: 100%;
+  }
+  
+  .instructions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .instruction-card {
+    padding: 0.75rem;
+  }
+}

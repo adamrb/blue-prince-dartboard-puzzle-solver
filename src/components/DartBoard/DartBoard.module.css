@@ -1,0 +1,198 @@
+.dartboardContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.dartboard {
+  width: 100%;
+  height: auto;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+@media (max-width: 992px) {
+  .dartboard {
+    max-width: 85%;
+  }
+}
+
+@media (max-width: 576px) {
+  .dartboard {
+    max-width: 95%;
+  }
+}
+
+.segment {
+  cursor: pointer;
+  transition: fill 0.2s ease;
+}
+
+.segment:hover {
+  opacity: 0.9;
+}
+
+/* Operation colors */
+.operationAddition {
+  fill: #659AA2 !important; /* Blue */
+}
+
+.operationSubtraction {
+  fill: #D4C384 !important; /* Yellow */
+}
+
+.operationMultiplication {
+  fill: #C47FA6 !important; /* Pink/red */
+}
+
+.operationDivision {
+  fill: #5C4AA9 !important; /* Purple */
+}
+
+.outerRing {
+  fill: #333;
+  stroke: #666;
+  stroke-width: 1px;
+}
+
+/* Number ring - the dark grey area where numbers are displayed */
+.numberRing {
+  fill: #202222; /* Grey behind numbers */
+  stroke: #333;
+  stroke-width: 0.5px;
+  pointer-events: none; /* Make sure it's not clickable */
+}
+
+/* Dividers for the outermost clickable ring */
+.outerRingDivider {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.numberText {
+  fill: #596061; /* Numbers color */
+  font-family: Arial, sans-serif;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  stroke: #333;
+  stroke-width: 0.5px;
+  paint-order: stroke fill;
+}
+
+.bullseye {
+  fill: #222222; /* Dark Gray */
+  stroke: none; /* Remove stroke to avoid the black ring */
+}
+
+.innerBullseye {
+  fill: #6F7978; /* Grey for inner bullseye */
+  stroke: none;
+  cursor: pointer;
+}
+
+/* Add some opacity to the thin bullseye ring so the operations colors can show through better */
+.bullseyeRing {
+  fill: rgba(203, 29, 29, 0.9);
+  stroke: #111;
+  stroke-width: 0.5px;
+}
+
+.boardBackground {
+  fill: #111;
+  stroke: #333;
+  stroke-width: 2px;
+}
+
+/* Bullseye symbol styling */
+.bullseyeSymbol {
+  fill: white;
+  font-weight: bold;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none; /* Allow clicks to pass through to bullseye */
+  user-select: none; /* Prevent text selection */
+}
+
+.bullseyeOuterSymbol {
+  font-size: 56px; /* Much larger to fill the bullseye completely */
+  opacity: 0.8;
+}
+
+.bullseyeInnerSymbol {
+  font-size: 22px; /* Slightly larger but still much smaller than outer symbol */
+}
+
+.blackSegment {
+  fill: #3E3F41; /* Dark grey */
+}
+
+.whiteSegment {
+  fill: #eee; /* White */
+}
+
+/* Double and triple ring colors - dark grey and light grey variants */
+.doubleRingDarkGrey, .tripleRingDarkGrey {
+  fill: #333333; /* Dark Grey */
+  stroke: #111;
+  stroke-width: 0.5px;
+}
+
+.doubleRingLightGrey, .tripleRingLightGrey {
+  fill: #888888; /* Light Grey */
+  stroke: #111;
+  stroke-width: 0.5px;
+}
+
+.segmentDivider {
+  stroke: #444;
+  stroke-width: 0.5px;
+}
+
+/* Outer Ring State Indicators */
+.outerRingCross line {
+  stroke: white;
+  stroke-width: 2px;
+  stroke-linecap: round;
+}
+
+.outerRingDiagonalLine line {
+  stroke: white;
+  stroke-width: 2px;
+  stroke-linecap: round;
+}
+
+.outerRingTwoDots circle {
+  fill: red;
+}
+
+/* Reset button styling */
+.resetButton {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.resetButton:hover {
+  background-color: #444;
+}
+
+.resetButton:focus {
+  outline: 2px solid #659AA2;
+  outline-offset: 2px;
+}
+
+@media (max-width: 576px) {
+  .resetButton {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+}

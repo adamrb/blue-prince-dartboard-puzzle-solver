@@ -1,0 +1,109 @@
+.dialogOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.dialogContent {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.section {
+  margin-bottom: 1.5rem;
+}
+
+.colorOptions, .actionOptions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.colorButton, .actionButton {
+  padding: 0.5rem;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  background-color: #f5f5f5;
+}
+
+.selected {
+  border-color: #333;
+  background-color: #e0e0e0;
+  font-weight: bold;
+}
+
+.blueButton {
+  background-color: rgba(33, 150, 243, 0.2);
+}
+
+.yellowButton {
+  background-color: rgba(255, 235, 59, 0.2);
+}
+
+.pinkButton {
+  background-color: rgba(255, 64, 129, 0.2);
+}
+
+.purpleButton {
+  background-color: rgba(156, 39, 176, 0.2);
+}
+
+.preview {
+  margin-top: 2rem;
+}
+
+.bullseyePreview {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin: 1rem auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  border: 2px solid #333;
+}
+
+.previewSymbol {
+  pointer-events: none;
+  user-select: none;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.cancelButton, .saveButton {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancelButton {
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+}
+
+.saveButton {
+  background-color: #2196F3;
+  border: 1px solid #0d8bf2;
+  color: white;
+}
