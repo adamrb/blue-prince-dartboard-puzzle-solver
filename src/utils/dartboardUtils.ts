@@ -538,6 +538,14 @@ export const applyNumberModifier = (
 
 /**
  * Calculate the equation result based on active segments
+ * 
+ * This function processes segments in a specific order:
+ * 1. Segments are processed ring by ring from innermost to outermost
+ * 2. After processing each ring, if any segment in that ring matches the bullseye color,
+ *    the bullseye actions (inner and outer) are applied
+ * 3. Segments with "subtraction" operations (yellow) have their values negated
+ * 4. Partial segments (1/3 shaded) use 1/3 of their number value
+ * 5. Outer ring modifiers like "oneThirdFull" are applied to the number before operations
  */
 export const calculateEquation = (segments: DartBoardSegment[], bullseye: BullseyeState): {
   steps: string[],
@@ -553,40 +561,8 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
   // Create a map of number modifiers
   const numberModifiers = createNumberModifiersMap(segments);
   
-  // Get the first segment and its information
-  const firstSegmentData = activeSegments[0];
-  const firstSegment = firstSegmentData.segment;
-  const firstPart = firstSegmentData.part;
-  const firstNumber = firstSegment.number;
-  const firstNumberModifier = numberModifiers.get(firstNumber);
-  const firstIsPartial = firstSegment[firstPart].isPartial || false;
-  
-  // Apply partial (1/3) adjustment first if needed
-  let adjustedFirstNumber = firstIsPartial ? firstNumber / 3 : firstNumber;
-  let partialText = firstIsPartial ? ` (${firstNumber}÷3=${adjustedFirstNumber.toFixed(2)})` : '';
-  
-  // Apply modifier to adjusted number if needed
-  const { 
-    modifiedNumber: modifiedFirstNumber, 
-    modifierText: firstModifierText 
-  } = applyNumberModifier(adjustedFirstNumber, firstNumberModifier);
-  
-  // Use the modified number after both partial and other modifiers have been applied
-  adjustedFirstNumber = modifiedFirstNumber;
-  
-  // Check if the first segment has a yellow (subtraction) operation
-  let result = adjustedFirstNumber;
-  const firstSegmentOperation = firstSegment[firstPart].operation;
-  let firstStepText = `${firstNumber}${partialText}${firstModifierText}`;
-  
-  if (firstSegmentOperation === 'subtraction') {
-    // If the first segment is yellow (subtraction), make the number negative
-    result = -result;
-    firstStepText = `${firstNumber}${partialText}${firstModifierText} (yellow segment, making it negative: ${result})`;
-  }
-  
-  // Start with the innermost segment's number (with all applicable modifiers)
-  const steps: string[] = [firstStepText];
+  // Steps for showing the calculation process
+  const steps: string[] = [];
   
   // Map bullseye color to matching operation
   let matchingOperation: 'addition' | 'subtraction' | 'multiplication' | 'division' | null = null;
@@ -607,16 +583,32 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
     }
   }
   
-  // Flag to track if we've encountered any operations that match the bullseye color
-  let hasMatchingOperation = firstSegmentOperation === matchingOperation;
-
+  // Group segments by their ring (distance from center)
+  const segmentsByRing: Map<number, Array<{
+    segment: DartBoardSegment,
+    part: 'innerSegment' | 'tripleRing' | 'mainSegment' | 'doubleRing' | 'outerRing',
+    distanceFromCenter: number
+  }>> = new Map();
+  
+  // Group all segments by their ring
+  for (const segmentData of activeSegments) {
+    const { distanceFromCenter } = segmentData;
+    
+    if (!segmentsByRing.has(distanceFromCenter)) {
+      segmentsByRing.set(distanceFromCenter, []);
+    }
+    
+    segmentsByRing.get(distanceFromCenter)?.push(segmentData);
+  }
+  
+  // Sort rings by distance from center
+  const ringDistances = Array.from(segmentsByRing.keys()).sort((a, b) => a - b);
+  
   // Helper function to apply a bullseye action with proper handling for repeating operations
   const applyBullseyeActionWithSteps = (
     currentResult: number, 
     bullseyeAction: BullseyeActionType | null, 
-    steps: string[],
-    operation: 'addition' | 'subtraction' | 'multiplication' | 'division' | null,
-    operand: number = 0
+    steps: string[]
   ): { result: number, updatedSteps: string[] } => {
     if (!bullseyeAction) {
       return { result: currentResult, updatedSteps: steps };
@@ -626,62 +618,34 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
     const newSteps = [...steps];
     let newResult = currentResult;
     
-    // Check if this is a repeat operation action
-    if (['twoDots', 'threeDots', 'fourDots'].includes(bullseyeAction)) {
-      // Get the number of repeats
-      let repeats = 1;
-      if (bullseyeAction === 'twoDots') repeats = 2;
-      if (bullseyeAction === 'threeDots') repeats = 3;
-      if (bullseyeAction === 'fourDots') repeats = 4;
-      
-      // The operation is already performed once before we get here
-      // So we need to perform it (repeats - 1) more times to reach the total
-      
-      // If repeats is 2, we need to do the operation one more time (2 total)
-      const remainingRepeats = repeats - 1;
-      
-      if (remainingRepeats > 0) {
-        // Apply the repeated operation
-        newSteps.push(`${actionText}:`);
-        
-        // Apply the operation the remaining number of times
-        for (let i = 0; i < remainingRepeats; i++) {
-          const prevVal = newResult;
-          newResult = applyOperation(newResult, operand, operation);
-          // Step numbers still start at 1, but we're only showing the additional operations
-          newSteps.push(`  Step ${i + 1}: ${prevVal} ${getOperationText(operation)} ${operand} = ${newResult}`);
-        }
-      } else {
-        // If repeats is 1, we've already done it once, so just explain
-        newSteps.push(`${actionText}: Operation already applied once, no additional repeats needed.`);
-      }
-    } else {
-      // Apply regular bullseye action
-      const prevVal = newResult;
-      newResult = applyBullseyeAction(newResult, bullseyeAction);
-      newSteps.push(`${actionText}(${prevVal}) = ${newResult}`);
-    }
+    // Apply regular bullseye action
+    const prevVal = newResult;
+    newResult = applyBullseyeAction(newResult, bullseyeAction);
+    newSteps.push(`${actionText}(${prevVal}) = ${newResult}`);
     
     return { result: newResult, updatedSteps: newSteps };
   };
-  
-  // We no longer apply bullseye actions here
 
-  // Process each active segment in order from inside out
-  for (let i = 1; i < activeSegments.length; i++) {
-    const { segment, part } = activeSegments[i];
+  /**
+   * Process a segment and apply its operation to the running result
+   * 
+   * @param segment - The dartboard segment
+   * @param part - The specific part of the segment (innerSegment, tripleRing, etc.)
+   * @param result - The current running result
+   * @param isFirstSegment - Whether this is the first segment being processed
+   * @returns Object containing the updated result and a step description
+   */
+  const processSegment = (
+    segment: DartBoardSegment,
+    part: 'innerSegment' | 'tripleRing' | 'mainSegment' | 'doubleRing' | 'outerRing',
+    result: number,
+    isFirstSegment: boolean
+  ): { result: number, step: string } => {
     const operation = segment[part].operation;
     const number = segment.number;
-    
-    // Check if this operation matches the bullseye color
-    if (operation === matchingOperation) {
-      hasMatchingOperation = true;
-    }
-    
-    // Get partial flag for this segment part
     const isPartial = segment[part].isPartial || false;
     
-    // Apply 1/3 calculation first if partial
+    // Apply partial (1/3) calculation if needed
     let adjustedNumber = number;
     let partialText = '';
     if (isPartial) {
@@ -689,108 +653,110 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
       partialText = ` (${number}÷3=${adjustedNumber.toFixed(2)})`;
     }
     
-    // Check if this number has a modifier in the outer ring
+    // Check for number modifiers from outer ring
     const outerRingState = numberModifiers.get(number);
     const { 
       modifiedNumber, 
       skipOperation, 
       modifierText,
-      repeatOperation
-    } = applyNumberModifier(isPartial ? adjustedNumber : number, outerRingState);
+    } = applyNumberModifier(adjustedNumber, outerRingState);
     
     // Skip this operation if the number should be ignored
     if (skipOperation) {
-      steps.push(`${result} ${getOperationText(operation)} ${number}${partialText}${modifierText} = ${result} (operation skipped)`);
-      continue;
+      return { 
+        result, 
+        step: `${number}${partialText}${modifierText} (operation skipped)` 
+      };
     }
     
-    const operationText = getOperationText(operation);
+    // Format the number display with modifiers
+    const formattedValue = `${number}${partialText}${modifierText}`;
     
-    // Regular single operation first
-    const prevResult = result;
-    result = applyOperation(prevResult, modifiedNumber, operation);
-    
-    // Format step showing partial calculation first, then modifiers
-    steps.push(`${prevResult} ${operationText} ${number}${partialText}${modifierText} = ${result}`);
-    
-    /**
-     * Helper function to apply repeated operations with proper calculations based on the operation type
-     */
-    const applyRepeatedOperation = (
-      baseValue: number, 
-      operand: number, 
-      operation: 'addition' | 'subtraction' | 'multiplication' | 'division' | null,
-      repeats: number,
-      steps: string[]
-    ): { result: number, steps: string[] } => {
-      if (repeats <= 1 || !operation) {
-        return { result: baseValue, steps };
+    // For the first segment, we just use its value (with adjustments)
+    if (isFirstSegment) {
+      // If it's subtraction, make the value negative
+      let newResult = operation === 'subtraction' ? -modifiedNumber : modifiedNumber;
+      
+      let stepText = `Starting with: ${formattedValue}`;
+      if (operation === 'subtraction') {
+        stepText += ` (yellow segment, making it negative: ${newResult})`;
       }
-
-      let result = baseValue;
+      
+      return { result: newResult, step: stepText };
+    } 
+    // For subsequent segments, apply the operation to the running result
+    else {
+      const prevResult = result;
       const operationText = getOperationText(operation);
       
-      // The first operation was already applied, so we start from the second
-      steps.push(`Repeat operation ${repeats - 1} more times:`);
+      // Apply the operation
+      const newResult = applyOperation(prevResult, modifiedNumber, operation);
       
-      for (let i = 1; i < repeats; i++) {
-        const currentResult = result;
-        result = applyOperation(currentResult, operand, operation);
-        steps.push(`  Step ${i + 1}: ${currentResult} ${operationText} ${operand} = ${result}`);
+      return { 
+        result: newResult, 
+        step: `${prevResult} ${operationText} ${formattedValue} = ${newResult}` 
+      };
+    }
+  };
+  
+  let result = 0;
+  let firstSegmentProcessed = false;
+  
+  // Process each ring in order from innermost to outermost
+  for (const ringDistance of ringDistances) {
+    const ringSegments = segmentsByRing.get(ringDistance) || [];
+    let hasMatchingOperationInRing = false;
+    
+    // Process each segment in the current ring
+    for (const { segment, part } of ringSegments) {
+      // Check if this segment's operation matches the bullseye color
+      if (segment[part].operation === matchingOperation) {
+        hasMatchingOperationInRing = true;
       }
       
-      return { result, steps };
-    };
-
-    // Handle repeating operations (for red dots)
-    if (repeatOperation > 1) {
-      const repeatedOpResult = applyRepeatedOperation(
-        result,
-        modifiedNumber,
-        operation,
-        repeatOperation,
-        [] // Create empty array to collect new steps
+      // Process the segment
+      const { result: newResult, step } = processSegment(
+        segment, 
+        part, 
+        result, 
+        !firstSegmentProcessed
       );
       
-      // Update the result
-      result = repeatedOpResult.result;
-      // Add the new steps to our existing steps array
-      repeatedOpResult.steps.forEach(step => steps.push(step));
+      // Update the running result and steps
+      result = newResult;
+      steps.push(step);
+      
+      // Mark that we've processed the first segment
+      firstSegmentProcessed = true;
     }
     
-    // We no longer apply bullseye actions here - removed all that code
-  }
-  
-  // Now apply bullseye actions at the very end, after all operations are complete
-  if (hasMatchingOperation && bullseye.color) {
-    // Apply inner action first (if exists)
-    if (bullseye.innerAction) {
-      const innerActionResult = applyBullseyeActionWithSteps(
-        result,
-        bullseye.innerAction,
-        [],
-        matchingOperation
-      );
+    // Apply bullseye actions after processing this ring if it contained matching operations
+    if (hasMatchingOperationInRing && bullseye.color) {
+      // Apply inner action first (if exists)
+      if (bullseye.innerAction) {
+        const innerActionResult = applyBullseyeActionWithSteps(
+          result,
+          bullseye.innerAction,
+          []
+        );
+        
+        // Update result and add steps
+        result = innerActionResult.result;
+        innerActionResult.updatedSteps.forEach(step => steps.push(step));
+      }
       
-      // Update result
-      result = innerActionResult.result;
-      // Add new steps to the existing steps array
-      innerActionResult.updatedSteps.forEach(step => steps.push(step));
-    }
-    
-    // Then apply outer action (if exists)
-    if (bullseye.outerAction) {
-      const outerActionResult = applyBullseyeActionWithSteps(
-        result,
-        bullseye.outerAction,
-        [],
-        matchingOperation
-      );
-      
-      // Update result
-      result = outerActionResult.result;
-      // Add new steps to the existing steps array
-      outerActionResult.updatedSteps.forEach(step => steps.push(step));
+      // Then apply outer action (if exists)
+      if (bullseye.outerAction) {
+        const outerActionResult = applyBullseyeActionWithSteps(
+          result,
+          bullseye.outerAction,
+          []
+        );
+        
+        // Update result and add steps
+        result = outerActionResult.result;
+        outerActionResult.updatedSteps.forEach(step => steps.push(step));
+      }
     }
   }
   
