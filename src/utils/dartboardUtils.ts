@@ -631,7 +631,9 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
   const applyBullseyeActionWithSteps = (
     currentResult: number, 
     bullseyeAction: BullseyeActionType | null, 
-    steps: string[]
+    steps: string[],
+    lastOperation: 'addition' | 'subtraction' | 'multiplication' | 'division' | null = null,
+    lastOperand: number | null = null
   ): { result: number, updatedSteps: string[] } => {
     if (!bullseyeAction) {
       return { result: currentResult, updatedSteps: steps };
@@ -657,48 +659,24 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
           break;
       }
       
-      // Find the last operation that was applied
-      const lastStep = steps[steps.length - 1] || '';
-      const operationMatch = lastStep.match(/([+\-×÷])/);
-      
-      if (operationMatch) {
-        const operation = operationMatch[1];
-        const numberMatch = lastStep.match(/[+\-×÷]\s+(\d+)/);
+      // Check if we have the last operation and operand
+      if (lastOperation && lastOperand !== null) {
+        const operationText = getOperationText(lastOperation);
         
-        if (numberMatch) {
-          const operand = parseFloat(numberMatch[1]);
+        // Apply the operation additional times
+        newSteps.push(`${actionText}: Repeating last operation ${repeatCount - 1} more times`);
+        
+        for (let i = 1; i < repeatCount; i++) {
+          const prevResult = newResult;
           
-          // Apply the operation additional times
-          newSteps.push(`${actionText}: Repeating last operation ${repeatCount - 1} more times`);
+          // Apply the operation
+          newResult = applyOperation(prevResult, lastOperand, lastOperation);
           
-          for (let i = 1; i < repeatCount; i++) {
-            const prevResult = newResult;
-            
-            // Apply the operation based on the symbol
-            switch (operation) {
-              case '+':
-                newResult = prevResult + operand;
-                break;
-              case '-':
-                newResult = prevResult - operand;
-                break;
-              case '×':
-                newResult = prevResult * operand;
-                break;
-              case '÷':
-                newResult = prevResult / operand;
-                break;
-            }
-            
-            newSteps.push(`  Repeat ${i+1}/${repeatCount}: ${formatNumber(prevResult)} ${operation} ${operand} = ${formatNumber(newResult)}`);
-          }
-        } else {
-          // If we couldn't extract the number, just note that we're repeating
-          newSteps.push(`${actionText}: Could not repeat operation (number not found)`);
+          newSteps.push(`  Repeat ${i+1}/${repeatCount}: ${formatNumber(prevResult)} ${operationText} ${lastOperand} = ${formatNumber(newResult)}`);
         }
       } else {
-        // If we couldn't find an operation, just note that we're repeating
-        newSteps.push(`${actionText}: Could not repeat operation (operation not found)`);
+        // If we don't have the last operation info, note that we can't repeat
+        newSteps.push(`${actionText}: Could not repeat operation (no previous operation found)`);
       }
     } else {
       // Apply regular bullseye action
@@ -831,12 +809,38 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
     
     // Apply bullseye actions after processing this ring if it contained matching operations
     if (hasMatchingOperationInRing && bullseye.color) {
+      // Track the last operation and operand for repeating
+      let lastOperation: 'addition' | 'subtraction' | 'multiplication' | 'division' | null = null;
+      let lastOperand: number | null = null;
+      
+      // Find the last segment with the matching operation
+      for (const { segment, part } of ringSegments) {
+        if (segment[part].operation === matchingOperation) {
+          lastOperation = segment[part].operation;
+          lastOperand = segment.number;
+          
+          // Apply any modifiers to the operand
+          const outerRingState = numberModifiers.get(lastOperand);
+          if (outerRingState) {
+            const { modifiedNumber } = applyNumberModifier(lastOperand, outerRingState);
+            lastOperand = modifiedNumber;
+          }
+          
+          // If the segment is partial, adjust the operand
+          if (segment[part].isPartial) {
+            lastOperand = new Fraction(lastOperand).div(3).valueOf();
+          }
+        }
+      }
+      
       // Apply inner action first (if exists)
       if (bullseye.innerAction) {
         const innerActionResult = applyBullseyeActionWithSteps(
           result,
           bullseye.innerAction,
-          []
+          [],
+          lastOperation,
+          lastOperand
         );
         
         // Update result and add steps
@@ -849,7 +853,9 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
         const outerActionResult = applyBullseyeActionWithSteps(
           result,
           bullseye.outerAction,
-          []
+          [],
+          lastOperation,
+          lastOperand
         );
         
         // Update result and add steps
