@@ -1,4 +1,20 @@
 import { DartBoardSegment, BullseyeState, BullseyeActionType, BullseyeColor, OuterRingState } from '../types/DartBoard';
+import Fraction from 'fraction.js';
+
+/**
+ * Format a number for display:
+ * - Integers remain as integers
+ * - Decimals are shown with exactly 2 decimal places
+ */
+export const formatNumber = (value: number): string => {
+  // Check if the value is an integer
+  if (Number.isInteger(value)) {
+    return value.toString();
+  }
+  
+  // Otherwise format to 2 decimal places
+  return value.toFixed(2);
+};
 
 /**
  * Calculate the X coordinate on a circle given center, radius and angle
@@ -305,6 +321,7 @@ export const getBullseyeActionText = (action: BullseyeActionType): string => {
 
 /**
  * Apply bullseye action to a number
+ * Uses fraction.js for exact division by 3
  */
 export const applyBullseyeAction = (
   value: number, 
@@ -324,7 +341,8 @@ export const applyBullseyeAction = (
     case 'tripleWavy':
       return Math.round(value / 100) * 100;
     case 'oneThirdFull':
-      return value / 3;
+      // Use fraction.js for exact division by 3
+      return new Fraction(value).div(3).valueOf();
     // The dot cases (repeat operations) will be handled in the calculateEquation function
     case 'twoDots':
     case 'threeDots':
@@ -355,6 +373,7 @@ export const getOperationText = (operation: 'addition' | 'subtraction' | 'multip
 
 /**
  * Apply an operation to two numbers
+ * Uses fraction.js for precise fraction arithmetic, especially for 1/3 values
  */
 export const applyOperation = (
   a: number,
@@ -362,19 +381,22 @@ export const applyOperation = (
   operation: 'addition' | 'subtraction' | 'multiplication' | 'division' | null,
   isPartial: boolean = false
 ): number => {
-  // If partial, use only 1/3 of the value
-  const operand = isPartial ? b / 3 : b;
+  // Create Fraction instances
+  const aFraction = new Fraction(a);
   
-  // Apply the operation
+  // If partial, use exactly 1/3 of the value with fraction precision
+  const bFraction = isPartial ? new Fraction(b).div(3) : new Fraction(b);
+  
+  // Apply the operation using Fraction methods
   switch (operation) {
     case 'addition':
-      return a + operand;
+      return aFraction.add(bFraction).valueOf();
     case 'subtraction':
-      return a - operand;
+      return aFraction.sub(bFraction).valueOf();
     case 'multiplication':
-      return a * operand;
+      return aFraction.mul(bFraction).valueOf();
     case 'division':
-      return operand !== 0 ? a / operand : NaN; // Prevent division by zero
+      return bFraction.equals(0) ? NaN : aFraction.div(bFraction).valueOf();
     default:
       return a; // No operation, return the first number
   }
@@ -486,7 +508,7 @@ export const applyNumberModifier = (
         break;
       case 'diagonalLine':
         modifiedNumber = number / 2;
-        modifierText = ` (${number}÷2=${modifiedNumber})`;
+        modifierText = ` (${number}÷2=${formatNumber(modifiedNumber)})`;
         break;
       case 'twoDots':
         repeatOperation = 2;
@@ -502,31 +524,32 @@ export const applyNumberModifier = (
         break;
       case 'square':
         modifiedNumber = Math.pow(number, 2);
-        modifierText = ` (${number}²=${modifiedNumber})`;
+        modifierText = ` (${number}²=${formatNumber(modifiedNumber)})`;
         break;
       case 'twoSquares':
         modifiedNumber = Math.pow(number, 4);
-        modifierText = ` (${number}⁴=${modifiedNumber})`;
+        modifierText = ` (${number}⁴=${formatNumber(modifiedNumber)})`;
         break;
       case 'diamond':
         modifiedNumber = parseInt(Math.abs(number).toString().split('').reverse().join('')) * Math.sign(number);
-        modifierText = ` (reversed=${modifiedNumber})`;
+        modifierText = ` (reversed=${formatNumber(modifiedNumber)})`;
         break;
       case 'singleWavy':
         modifiedNumber = Math.round(number);
-        modifierText = ` (rounded to ${modifiedNumber})`;
+        modifierText = ` (rounded to ${formatNumber(modifiedNumber)})`;
         break;
       case 'doubleWavy':
         modifiedNumber = Math.round(number / 10) * 10;
-        modifierText = ` (rounded to ${modifiedNumber})`;
+        modifierText = ` (rounded to ${formatNumber(modifiedNumber)})`;
         break;
       case 'tripleWavy':
         modifiedNumber = Math.round(number / 100) * 100;
-        modifierText = ` (rounded to ${modifiedNumber})`;
+        modifierText = ` (rounded to ${formatNumber(modifiedNumber)})`;
         break;
       case 'oneThirdFull':
-        modifiedNumber = number / 3;
-        modifierText = ` (${number}÷3=${modifiedNumber})`;
+        // Use fraction.js for exact division by 3
+        modifiedNumber = new Fraction(number).div(3).valueOf();
+        modifierText = ` (${number}÷3=${formatNumber(modifiedNumber)})`;
         break;
       default:
         break;
@@ -621,7 +644,7 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
     // Apply regular bullseye action
     const prevVal = newResult;
     newResult = applyBullseyeAction(newResult, bullseyeAction);
-    newSteps.push(`${actionText}(${prevVal}) = ${newResult}`);
+    newSteps.push(`${actionText}(${formatNumber(prevVal)}) = ${formatNumber(newResult)}`);
     
     return { result: newResult, updatedSteps: newSteps };
   };
@@ -649,8 +672,11 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
     let adjustedNumber = number;
     let partialText = '';
     if (isPartial) {
-      adjustedNumber = number / 3;
-      partialText = ` (${number}÷3=${adjustedNumber.toFixed(2)})`;
+      // Use fraction.js for exact division by 3
+      const frac = new Fraction(number).div(3);
+      adjustedNumber = frac.valueOf();
+      // Display as exact fraction for clarity
+      partialText = ` (${number}÷3=${frac.toFraction()})`;
     }
     
     // Check for number modifiers from outer ring
@@ -679,7 +705,7 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
       
       let stepText = `Starting with: ${formattedValue}`;
       if (operation === 'subtraction') {
-        stepText += ` (yellow segment, making it negative: ${newResult})`;
+        stepText += ` (yellow segment, making it negative: ${formatNumber(newResult)})`;
       }
       
       return { result: newResult, step: stepText };
@@ -694,7 +720,7 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
       
       return { 
         result: newResult, 
-        step: `${prevResult} ${operationText} ${formattedValue} = ${newResult}` 
+        step: `${formatNumber(prevResult)} ${operationText} ${formattedValue} = ${formatNumber(newResult)}` 
       };
     }
   };
