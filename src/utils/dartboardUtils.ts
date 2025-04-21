@@ -641,10 +641,71 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
     const newSteps = [...steps];
     let newResult = currentResult;
     
-    // Apply regular bullseye action
-    const prevVal = newResult;
-    newResult = applyBullseyeAction(newResult, bullseyeAction);
-    newSteps.push(`${actionText}(${formatNumber(prevVal)}) = ${formatNumber(newResult)}`);
+    // Handle repeat operations (twoDots, threeDots, fourDots)
+    if (bullseyeAction === 'twoDots' || bullseyeAction === 'threeDots' || bullseyeAction === 'fourDots') {
+      // Determine how many times to repeat the operation
+      let repeatCount = 1;
+      switch (bullseyeAction) {
+        case 'twoDots':
+          repeatCount = 2;
+          break;
+        case 'threeDots':
+          repeatCount = 3;
+          break;
+        case 'fourDots':
+          repeatCount = 4;
+          break;
+      }
+      
+      // Find the last operation that was applied
+      const lastStep = steps[steps.length - 1] || '';
+      const operationMatch = lastStep.match(/([+\-×÷])/);
+      
+      if (operationMatch) {
+        const operation = operationMatch[1];
+        const numberMatch = lastStep.match(/[+\-×÷]\s+(\d+)/);
+        
+        if (numberMatch) {
+          const operand = parseFloat(numberMatch[1]);
+          
+          // Apply the operation additional times
+          newSteps.push(`${actionText}: Repeating last operation ${repeatCount - 1} more times`);
+          
+          for (let i = 1; i < repeatCount; i++) {
+            const prevResult = newResult;
+            
+            // Apply the operation based on the symbol
+            switch (operation) {
+              case '+':
+                newResult = prevResult + operand;
+                break;
+              case '-':
+                newResult = prevResult - operand;
+                break;
+              case '×':
+                newResult = prevResult * operand;
+                break;
+              case '÷':
+                newResult = prevResult / operand;
+                break;
+            }
+            
+            newSteps.push(`  Repeat ${i+1}/${repeatCount}: ${formatNumber(prevResult)} ${operation} ${operand} = ${formatNumber(newResult)}`);
+          }
+        } else {
+          // If we couldn't extract the number, just note that we're repeating
+          newSteps.push(`${actionText}: Could not repeat operation (number not found)`);
+        }
+      } else {
+        // If we couldn't find an operation, just note that we're repeating
+        newSteps.push(`${actionText}: Could not repeat operation (operation not found)`);
+      }
+    } else {
+      // Apply regular bullseye action
+      const prevVal = newResult;
+      newResult = applyBullseyeAction(newResult, bullseyeAction);
+      newSteps.push(`${actionText}(${formatNumber(prevVal)}) = ${formatNumber(newResult)}`);
+    }
     
     return { result: newResult, updatedSteps: newSteps };
   };
@@ -685,6 +746,7 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
       modifiedNumber, 
       skipOperation, 
       modifierText,
+      repeatOperation
     } = applyNumberModifier(adjustedNumber, outerRingState);
     
     // Skip this operation if the number should be ignored
@@ -715,12 +777,23 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
       const prevResult = result;
       const operationText = getOperationText(operation);
       
-      // Apply the operation
-      const newResult = applyOperation(prevResult, modifiedNumber, operation);
+      // Apply the operation (once initially)
+      let newResult = applyOperation(prevResult, modifiedNumber, operation);
+      let stepText = `${formatNumber(prevResult)} ${operationText} ${formattedValue} = ${formatNumber(newResult)}`;
+      
+      // If we need to repeat the operation (for twoDots, threeDots, fourDots)
+      if (repeatOperation > 1) {
+        // Apply the operation additional times
+        for (let i = 1; i < repeatOperation; i++) {
+          const intermediateResult = newResult;
+          newResult = applyOperation(intermediateResult, modifiedNumber, operation);
+          stepText += `\n  Repeat ${i+1}/${repeatOperation}: ${formatNumber(intermediateResult)} ${operationText} ${number} = ${formatNumber(newResult)}`;
+        }
+      }
       
       return { 
         result: newResult, 
-        step: `${formatNumber(prevResult)} ${operationText} ${formattedValue} = ${formatNumber(newResult)}` 
+        step: stepText 
       };
     }
   };
