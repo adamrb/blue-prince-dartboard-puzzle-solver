@@ -489,6 +489,40 @@ export const createNumberModifiersMap = (segments: DartBoardSegment[]): Map<numb
 };
 
 /**
+ * Create a map of repeat operations for each segment number
+ */
+export const createRepeatOperationsMap = (segments: DartBoardSegment[]): Map<number, number> => {
+  const repeatOperations = new Map<number, number>();
+  
+  for (const segment of segments) {
+    // Check if the segment has a repeat operation in the outer ring
+    if (segment.outerRing.outerRingState === 'twoDots' || 
+        segment.outerRing.outerRingState === 'threeDots' || 
+        segment.outerRing.outerRingState === 'fourDots') {
+      
+      // Determine the repeat count
+      let repeatCount = 1;
+      switch (segment.outerRing.outerRingState) {
+        case 'twoDots':
+          repeatCount = 2;
+          break;
+        case 'threeDots':
+          repeatCount = 3;
+          break;
+        case 'fourDots':
+          repeatCount = 4;
+          break;
+      }
+      
+      // Add to the map
+      repeatOperations.set(segment.number, repeatCount);
+    }
+  }
+  
+  return repeatOperations;
+};
+
+/**
  * Modify a number based on its outer ring state
  */
 export const applyNumberModifier = (
@@ -583,6 +617,9 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
   
   // Create a map of number modifiers
   const numberModifiers = createNumberModifiersMap(segments);
+  
+  // Create a map of repeat operations
+  const repeatOperations = createRepeatOperationsMap(segments);
   
   // Steps for showing the calculation process
   const steps: string[] = [];
@@ -723,9 +760,11 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
     const { 
       modifiedNumber, 
       skipOperation, 
-      modifierText,
-      repeatOperation
+      modifierText
     } = applyNumberModifier(adjustedNumber, outerRingState);
+    
+    // Get the repeat operation from the map (this applies to all parts of the segment)
+    const repeatOperation = repeatOperations.get(number) || 1;
     
     // Skip this operation if the number should be ignored
     if (skipOperation) {
