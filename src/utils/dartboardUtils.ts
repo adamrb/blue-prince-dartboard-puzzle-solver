@@ -675,7 +675,7 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
   const numberModifiers = createNumberModifiersMap(segments);
   
   // Create a map of repeat operations
-  const repeatOperations = createRepeatOperationsMap(segments);
+  //const repeatOperations = createRepeatOperationsMap(segments);
   
   // Start with 0 at the bullseye
   let result = 0;
