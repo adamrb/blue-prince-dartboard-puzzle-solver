@@ -6,6 +6,59 @@ import Fraction from 'fraction.js';
  * - Integers remain as integers
  * - Decimals are shown with exactly 2 decimal places
  */
+/**
+ * Reverse the digits of a number, preserving decimal places and their position
+ * Example: 3.5 becomes 5.3, 4.623 becomes 326.4
+ */
+export const reverseNumber = (number: number): number => {
+  // Handle decimal numbers correctly
+  const absNum = Math.abs(number);
+  
+  // Format with fixed decimal places to preserve trailing zeros
+  // For example, 7.5 should be treated as 7.50 for proper reversal
+  let numStr;
+  if (Number.isInteger(absNum)) {
+    numStr = absNum.toString();
+  } else {
+    // Get the string with all decimal places
+    numStr = absNum.toString();
+    
+    // If the number has decimal places
+    if (numStr.includes('.')) {
+      const parts = numStr.split('.');
+      // Ensure at least 2 decimal places for consistent reversal
+      if (parts[1].length === 1) {
+        numStr = `${parts[0]}.${parts[1]}0`;
+      }
+    }
+  }
+  
+  const parts = numStr.split('.');
+  
+  let reversedNum;
+  if (parts.length === 1) {
+    // Integer case
+    reversedNum = parseInt(parts[0].split('').reverse().join(''));
+  } else {
+    // Decimal case - reverse each part separately and swap their positions
+    const intReversed = parts[0].split('').reverse().join('');
+    const decReversed = parts[1].split('').reverse().join('');
+    
+    // Remove leading zeros from the reversed integer part
+    const cleanIntReversed = intReversed.replace(/^0+/, '');
+    
+    reversedNum = parseFloat(`${decReversed}.${cleanIntReversed || '0'}`);
+    
+    // Round to 3 decimal places if needed
+    if (decReversed.length > 3) {
+      reversedNum = parseFloat(reversedNum.toFixed(3));
+    }
+  }
+  
+  // Apply the original sign
+  return reversedNum * Math.sign(number);
+};
+
 export const formatNumber = (value: number): string => {
   // Check if the value is an integer
   if (Number.isInteger(value)) {
@@ -333,7 +386,7 @@ export const applyBullseyeAction = (
     case 'twoSquares':
       return Math.pow(value, 4); // n⁴ - square the number twice
     case 'diamond':
-      return parseInt(Math.abs(value).toString().split('').reverse().join('')) * Math.sign(value);
+      return reverseNumber(value);
     case 'singleWavy':
       return Math.round(value);
     case 'doubleWavy':
@@ -565,7 +618,7 @@ export const applyNumberModifier = (
         modifierText = ` (${number}⁴=${formatNumber(modifiedNumber)})`;
         break;
       case 'diamond':
-        modifiedNumber = parseInt(Math.abs(number).toString().split('').reverse().join('')) * Math.sign(number);
+        modifiedNumber = reverseNumber(number);
         modifierText = ` (reversed=${formatNumber(modifiedNumber)})`;
         break;
       case 'singleWavy':
@@ -597,12 +650,15 @@ export const applyNumberModifier = (
  * Calculate the equation result based on active segments
  * 
  * This function processes segments in a specific order:
- * 1. Segments are processed ring by ring from innermost to outermost
- * 2. After processing each ring, if any segment in that ring matches the bullseye color,
+ * 1. Starting from 0 at the bullseye
+ * 2. Segments are processed ring by ring from innermost to outermost
+ * 3. Within each ring, all operations are applied with their modifiers
+ * 4. After processing each ring, if any segment in that ring matches the bullseye color,
  *    the bullseye actions (inner and outer) are applied
- * 3. Segments with "subtraction" operations (yellow) have their values negated
- * 4. Partial segments (1/3 shaded) use 1/3 of their number value
- * 5. Outer ring modifiers like "oneThirdFull" are applied to the number before operations
+ * 5. Segments with "subtraction" operations (yellow) have their values negated
+ * 6. Partial segments (1/3 shaded) use 1/3 of their number value
+ * 7. Outer ring modifiers like "oneThirdFull" are applied to the number before operations
+ * 8. Repeat modifiers (twoDots, threeDots, fourDots) apply the operation that many times
  */
 export const calculateEquation = (segments: DartBoardSegment[], bullseye: BullseyeState): {
   steps: string[],
@@ -621,8 +677,10 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
   // Create a map of repeat operations
   const repeatOperations = createRepeatOperationsMap(segments);
   
-  // Steps for showing the calculation process
+  // Start with 0 at the bullseye
+  let result = 0;
   const steps: string[] = [];
+  steps.push(`Starting with: 0`);
   
   // Map bullseye color to matching operation
   let matchingOperation: 'addition' | 'subtraction' | 'multiplication' | 'division' | null = null;
@@ -724,126 +782,109 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
     
     return { result: newResult, updatedSteps: newSteps };
   };
-
-  /**
-   * Process a segment and apply its operation to the running result
-   * 
-   * @param segment - The dartboard segment
-   * @param part - The specific part of the segment (innerSegment, tripleRing, etc.)
-   * @param result - The current running result
-   * @param isFirstSegment - Whether this is the first segment being processed
-   * @returns Object containing the updated result and a step description
-   */
-  const processSegment = (
-    segment: DartBoardSegment,
-    part: 'innerSegment' | 'tripleRing' | 'mainSegment' | 'doubleRing' | 'outerRing',
-    result: number,
-    isFirstSegment: boolean
-  ): { result: number, step: string } => {
-    const operation = segment[part].operation;
-    const number = segment.number;
-    const isPartial = segment[part].isPartial || false;
-    
-    // Apply partial (1/3) calculation if needed
-    let adjustedNumber = number;
-    let partialText = '';
-    if (isPartial) {
-      // Use fraction.js for exact division by 3
-      const frac = new Fraction(number).div(3);
-      adjustedNumber = frac.valueOf();
-      // Display as exact fraction for clarity
-      partialText = ` (${number}÷3=${frac.toFraction()})`;
-    }
-    
-    // Check for number modifiers from outer ring
-    const outerRingState = numberModifiers.get(number);
-    const { 
-      modifiedNumber, 
-      skipOperation, 
-      modifierText
-    } = applyNumberModifier(adjustedNumber, outerRingState);
-    
-    // Get the repeat operation from the map (this applies to all parts of the segment)
-    const repeatOperation = repeatOperations.get(number) || 1;
-    
-    // Skip this operation if the number should be ignored
-    if (skipOperation) {
-      return { 
-        result, 
-        step: `${number}${partialText}${modifierText} (operation skipped)` 
-      };
-    }
-    
-    // Format the number display with modifiers
-    const formattedValue = `${number}${partialText}${modifierText}`;
-    
-    // For the first segment, we just use its value (with adjustments)
-    if (isFirstSegment) {
-      // If it's subtraction, make the value negative
-      let newResult = operation === 'subtraction' ? -modifiedNumber : modifiedNumber;
-      
-      let stepText = `Starting with: ${formattedValue}`;
-      if (operation === 'subtraction') {
-        stepText += ` (yellow segment, making it negative: ${formatNumber(newResult)})`;
-      }
-      
-      return { result: newResult, step: stepText };
-    } 
-    // For subsequent segments, apply the operation to the running result
-    else {
-      const prevResult = result;
-      const operationText = getOperationText(operation);
-      
-      // Apply the operation (once initially)
-      let newResult = applyOperation(prevResult, modifiedNumber, operation);
-      let stepText = `${formatNumber(prevResult)} ${operationText} ${formattedValue} = ${formatNumber(newResult)}`;
-      
-      // If we need to repeat the operation (for twoDots, threeDots, fourDots)
-      if (repeatOperation > 1) {
-        // Apply the operation additional times
-        for (let i = 1; i < repeatOperation; i++) {
-          const intermediateResult = newResult;
-          newResult = applyOperation(intermediateResult, modifiedNumber, operation);
-          stepText += `\n  Repeat ${i+1}/${repeatOperation}: ${formatNumber(intermediateResult)} ${operationText} ${number} = ${formatNumber(newResult)}`;
-        }
-      }
-      
-      return { 
-        result: newResult, 
-        step: stepText 
-      };
-    }
-  };
-  
-  let result = 0;
-  let firstSegmentProcessed = false;
   
   // Process each ring in order from innermost to outermost
   for (const ringDistance of ringDistances) {
     const ringSegments = segmentsByRing.get(ringDistance) || [];
     let hasMatchingOperationInRing = false;
     
-    // Process each segment in the current ring
+    // Skip if no segments in this ring
+    if (ringSegments.length === 0) continue;
+    
+    // Collect all operations for this ring (including repeated operations)
+    type RingOperation = {
+      segment: DartBoardSegment;
+      part: 'innerSegment' | 'tripleRing' | 'mainSegment' | 'doubleRing' | 'outerRing';
+      operation: 'addition' | 'subtraction' | 'multiplication' | 'division' | null;
+      value: number;
+      formattedValue: string;
+      repeatCount: number;
+    };
+    
+    const ringOperations: RingOperation[] = [];
+    
+    // First pass: collect all operations in this ring
     for (const { segment, part } of ringSegments) {
-      // Check if this segment's operation matches the bullseye color
-      if (segment[part].operation === matchingOperation) {
+      const operation = segment[part].operation;
+      if (operation === null) continue;
+      
+      const number = segment.number;
+      const isPartial = segment[part].isPartial || false;
+      
+      // Apply partial calculation if needed
+      let adjustedNumber = number;
+      let partialText = '';
+      if (isPartial) {
+        const frac = new Fraction(number).div(3);
+        adjustedNumber = frac.valueOf();
+        partialText = ` (${number}÷3=${frac.toFraction()})`;
+      }
+      
+      // Check for number modifiers from outer ring
+      const outerRingState = numberModifiers.get(number);
+      const { 
+        modifiedNumber, 
+        skipOperation, 
+        modifierText,
+        repeatOperation 
+      } = applyNumberModifier(adjustedNumber, outerRingState);
+      
+      // Skip if operation should be ignored
+      if (skipOperation) {
+        steps.push(`${number}${partialText}${modifierText} (operation skipped)`);
+        continue;
+      }
+      
+      // Only check for matching operation if not skipped
+      if (operation === matchingOperation) {
         hasMatchingOperationInRing = true;
       }
       
-      // Process the segment
-      const { result: newResult, step } = processSegment(
-        segment, 
-        part, 
-        result, 
-        !firstSegmentProcessed
-      );
+      // Format the value for display
+      const formattedValue = `${number}${partialText}${modifierText}`;
       
-      // Update the running result and steps
-      result = newResult;
-      steps.push(step);
+      // Add to ring operations
+      ringOperations.push({
+        segment,
+        part,
+        operation,
+        value: modifiedNumber,
+        formattedValue,
+        repeatCount: repeatOperation
+      });
+    }
+    
+    // Process all operations in this ring
+    if (ringOperations.length > 0) {
+      let ringStepText = `${formatNumber(result)}`;
+      let currentResult = result;
       
-      // Mark that we've processed the first segment
-      firstSegmentProcessed = true;
+      // Process each operation with its repetitions
+      for (const op of ringOperations) {
+        const operationText = getOperationText(op.operation);
+        
+        // Apply operation for each repetition
+        for (let i = 0; i < op.repeatCount; i++) {
+          // Apply the operation
+          const previousResult = currentResult;
+          currentResult = applyOperation(previousResult, op.value, op.operation);
+          
+          // Add to the step text
+          if (i === 0) {
+            ringStepText += ` ${operationText} ${op.formattedValue}`;
+          } else {
+            // For repeated operations after the first, add details
+            ringStepText += ` ${operationText} ${op.segment.number}`;
+          }
+        }
+      }
+      
+      // Finalize the step text with result
+      ringStepText += ` = ${formatNumber(currentResult)}`;
+      steps.push(ringStepText);
+      
+      // Update the overall result
+      result = currentResult;
     }
     
     // Apply bullseye actions after processing this ring if it contained matching operations
