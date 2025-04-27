@@ -70,6 +70,66 @@ export const formatNumber = (value: number): string => {
 };
 
 /**
+ * Get standardized text for repeat operations
+ * @param repeatCount The number of times to repeat the operation
+ * @param longForm Whether to return the full description (true) or short form (false)
+ * @returns Standardized text for describing repeat operations
+ */
+export const getRepeatOperationText = (repeatCount: number, longForm: boolean = false): string => {
+  if (repeatCount <= 1) return '';
+  
+  if (longForm) {
+    return `Perform operation ${repeatCount} times independently and sum results`;
+  } else {
+    return `perform ${repeatCount} times and sum`;
+  }
+};
+
+/**
+ * Apply an operation multiple times and sum the results
+ * Each repetition starts from the same base value and the results are summed at the end
+ * 
+ * @param baseValue The initial value to apply operations to
+ * @param operation The operation to apply (addition, subtraction, multiplication, division)
+ * @param operand The value to use in the operation
+ * @param repeatCount How many times to repeat the operation
+ * @returns The summed result and explanation steps
+ */
+export const applyRepeatedOperation = (
+  baseValue: number,
+  operation: 'addition' | 'subtraction' | 'multiplication' | 'division' | null,
+  operand: number,
+  repeatCount: number
+): { result: number, steps: string[] } => {
+  if (repeatCount <= 1 || operation === null) {
+    // If no repetition needed or no operation specified, just apply once
+    const result = applyOperation(baseValue, operand, operation);
+    return { 
+      result,
+      steps: [`${formatNumber(baseValue)} ${getOperationText(operation)} ${formatNumber(operand)} = ${formatNumber(result)}`]
+    };
+  }
+  
+  const operationText = getOperationText(operation);
+  const steps: string[] = [];
+  const results: number[] = [];
+  
+  // Apply the operation independently for each repetition
+  for (let i = 0; i < repeatCount; i++) {
+    const result = applyOperation(baseValue, operand, operation);
+    results.push(result);
+    
+    steps.push(`Repeat ${i+1}/${repeatCount}: ${formatNumber(baseValue)} ${operationText} ${formatNumber(operand)} = ${formatNumber(result)}`);
+  }
+  
+  // Sum all the results
+  const summedResult = results.reduce((sum, value) => sum + value, 0);
+  steps.push(`Sum of repeats: ${results.map(r => formatNumber(r)).join(' + ')} = ${formatNumber(summedResult)}`);
+  
+  return { result: summedResult, steps };
+};
+
+/**
  * Calculate the X coordinate on a circle given center, radius and angle
  */
 export const calcX = (centerX: number, radius: number, angleInDegrees: number): number => {
@@ -362,11 +422,11 @@ export const getBullseyeActionText = (action: BullseyeActionType): string => {
     case 'oneThirdFull':
       return 'Divide by 3';
     case 'twoDots':
-      return 'Repeat operation 2 times';
+      return getRepeatOperationText(2, true);
     case 'threeDots':
-      return 'Repeat operation 3 times';
+      return getRepeatOperationText(3, true);
     case 'fourDots':
-      return 'Repeat operation 4 times';
+      return getRepeatOperationText(4, true);
     default:
       return '';
   }
@@ -599,15 +659,15 @@ export const applyNumberModifier = (
         break;
       case 'twoDots':
         repeatOperation = 2;
-        modifierText = ` (repeat operation 2 times)`;
+        modifierText = ` (${getRepeatOperationText(2)})`;
         break;
       case 'threeDots':
         repeatOperation = 3;
-        modifierText = ` (repeat operation 3 times)`;
+        modifierText = ` (${getRepeatOperationText(3)})`;
         break;
       case 'fourDots':
         repeatOperation = 4;
-        modifierText = ` (repeat operation 4 times)`;
+        modifierText = ` (${getRepeatOperationText(4)})`;
         break;
       case 'square':
         modifiedNumber = Math.pow(number, 2);
@@ -756,19 +816,22 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
       
       // Check if we have the last operation and operand
       if (lastOperation && lastOperand !== null) {
-        const operationText = getOperationText(lastOperation);
+        // Use our helper function to apply repeated operations correctly
+        newSteps.push(`${actionText}`);
         
-        // Apply the operation additional times
-        newSteps.push(`${actionText}: Repeating last operation ${repeatCount - 1} more times`);
+        // Use the helper function to apply the operation multiple times and sum results
+        const repeatResult = applyRepeatedOperation(
+          currentResult,
+          lastOperation,
+          lastOperand,
+          repeatCount
+        );
         
-        for (let i = 1; i < repeatCount; i++) {
-          const prevResult = newResult;
-          
-          // Apply the operation
-          newResult = applyOperation(prevResult, lastOperand, lastOperation);
-          
-          newSteps.push(`  Repeat ${i+1}/${repeatCount}: ${formatNumber(prevResult)} ${operationText} ${lastOperand} = ${formatNumber(newResult)}`);
-        }
+        // Add the steps from the repeated operation to our steps
+        repeatResult.steps.forEach(step => newSteps.push(`  ${step}`));
+        
+        // Update the result
+        newResult = repeatResult.result;
       } else {
         // If we don't have the last operation info, note that we can't repeat
         newSteps.push(`${actionText}: Could not repeat operation (no previous operation found)`);
@@ -858,30 +921,47 @@ export const calculateEquation = (segments: DartBoardSegment[], bullseye: Bullse
     if (ringOperations.length > 0) {
       let ringStepText = `${formatNumber(result)}`;
       let currentResult = result;
+      let hasNonRepeatOperations = false;
       
       // Process each operation with its repetitions
       for (const op of ringOperations) {
         const operationText = getOperationText(op.operation);
         
-        // Apply operation for each repetition
-        for (let i = 0; i < op.repeatCount; i++) {
-          // Apply the operation
+        if (op.repeatCount > 1) {
+          // For repeat operations, apply them independently and sum the results
+          // Note: We don't add to ringStepText here, as the detailed steps will be shown separately
+          
+          // Use our helper function to apply the operation multiple times and sum results
+          const repeatResult = applyRepeatedOperation(
+            currentResult,
+            op.operation,
+            op.value,
+            op.repeatCount
+          );
+          
+          // Add each step from the repeated operation
+          repeatResult.steps.forEach(step => steps.push(step));
+          
+          // Update the current result
+          currentResult = repeatResult.result;
+        } else {
+          // For normal operations, just apply once
           const previousResult = currentResult;
           currentResult = applyOperation(previousResult, op.value, op.operation);
           
           // Add to the step text
-          if (i === 0) {
-            ringStepText += ` ${operationText} ${op.formattedValue}`;
-          } else {
-            // For repeated operations after the first, add details
-            ringStepText += ` ${operationText} ${op.segment.number}`;
-          }
+          ringStepText += ` ${operationText} ${op.formattedValue}`;
+          hasNonRepeatOperations = true;
         }
       }
       
-      // Finalize the step text with result
-      ringStepText += ` = ${formatNumber(currentResult)}`;
-      steps.push(ringStepText);
+      // Only add the ringStepText to steps if there were non-repeat operations
+      // This avoids showing redundant summary lines for operations already detailed
+      if (hasNonRepeatOperations) {
+        // Finalize the step text with result
+        ringStepText += ` = ${formatNumber(currentResult)}`;
+        steps.push(ringStepText);
+      }
       
       // Update the overall result
       result = currentResult;
