@@ -14,6 +14,11 @@
   margin: 0 auto;
 }
 
+.readOnlyDartboard {
+  pointer-events: none; /* Disables all interactions */
+  cursor: default;
+}
+
 @media (max-width: 992px) {
   .dartboard {
     max-width: 85%;
@@ -176,9 +181,15 @@
   fill: red;
 }
 
+/* Button container styling */
+.buttonContainer {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
 /* Reset button styling */
 .resetButton {
-  margin-top: 20px;
   padding: 10px 20px;
   background-color: #333;
   color: white;
@@ -198,8 +209,34 @@
   outline-offset: 2px;
 }
 
+/* History button styling */
+.historyButton {
+  padding: 10px 20px;
+  background-color: #5C4AA9; /* Purple color from the existing scheme */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.historyButton:hover {
+  background-color: #4a3b85; /* Slightly darker shade for hover */
+}
+
+.historyButton:focus {
+  outline: 2px solid #C47FA6; /* Pink from existing scheme */
+  outline-offset: 2px;
+}
+
 @media (max-width: 576px) {
-  .resetButton {
+  .buttonContainer {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .resetButton, .historyButton {
     padding: 8px 16px;
     font-size: 14px;
   }

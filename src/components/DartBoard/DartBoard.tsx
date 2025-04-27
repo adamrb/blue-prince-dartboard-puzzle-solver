@@ -11,15 +11,21 @@ import {
   calcX,
   calcY
 } from '../../utils/dartboardUtils';
+import { savePuzzle } from '../../utils/storageUtils';
 import styles from './DartBoard.module.css';
 import BullseyeDialog from '../BullseyeDialog/BullseyeDialog';
 import SegmentDialog from '../SegmentDialog/SegmentDialog';
 import OuterSegmentDialog from '../OuterSegmentDialog/OuterSegmentDialog';
+import HistoryBrowser from '../HistoryBrowser/HistoryBrowser';
 
 interface DartBoardProps {
   config?: Partial<DartBoardConfig>;
   onSegmentsChange?: (segments: DartBoardSegment[]) => void;
   onBullseyeChange?: (bullseye: BullseyeState) => void;
+  readOnly?: boolean; // When true, disables all interactions and is suitable for thumbnail display
+  size?: number; // Optional size override for the dartboard (in pixels)
+  segments?: DartBoardSegment[]; // Initial segments (optional)
+  bullseye?: BullseyeState; // Initial bullseye state (optional)
 }
 
 const DEFAULT_CONFIG: DartBoardConfig = {
@@ -40,15 +46,24 @@ const DEFAULT_CONFIG: DartBoardConfig = {
   }
 };
 
-const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBullseyeChange }) => {
+const DartBoard: React.FC<DartBoardProps> = ({ 
+  config, 
+  onSegmentsChange, 
+  onBullseyeChange, 
+  readOnly = false,
+  size,
+  segments: initialSegments, 
+  bullseye: initialBullseye
+}) => {
   const boardConfig = { ...DEFAULT_CONFIG, ...config };
-  const [segments, setSegments] = useState<DartBoardSegment[]>([]);
-  const [bullseye, setBullseye] = useState(initializeBullseyeState());
+  const [segments, setSegments] = useState<DartBoardSegment[]>(initialSegments || []);
+  const [bullseye, setBullseye] = useState<BullseyeState>(initialBullseye || initializeBullseyeState());
   
   // State for dialogs
   const [bullseyeDialogOpen, setBullseyeDialogOpen] = useState(false);
   const [segmentDialogOpen, setSegmentDialogOpen] = useState(false);
   const [outerSegmentDialogOpen, setOuterSegmentDialogOpen] = useState(false);
+  const [historyBrowserOpen, setHistoryBrowserOpen] = useState(false);
   const [selectedSegment, setSelectedSegment] = useState<{
     id: number;
     part: 'innerSegment' | 'tripleRing' | 'mainSegment' | 'doubleRing' | 'outerRing';
@@ -131,23 +146,28 @@ const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBulls
   
   const svgSize = boardConfig.boardRadius * 2;
 
-  // Initialize segments on component mount
+  // Initialize segments on component mount if no initial segments provided
   useEffect(() => {
-    const initialSegments = initializeDartBoardSegments(boardConfig.numberOrder);
-    setSegments(initialSegments);
-    // Notify parent of initial state
-    if (onSegmentsChange) {
-      onSegmentsChange(initialSegments);
+    if (segments.length === 0) {
+      const newSegments = initializeDartBoardSegments(boardConfig.numberOrder);
+      setSegments(newSegments);
+      // Notify parent of initial state
+      if (onSegmentsChange) {
+        onSegmentsChange(newSegments);
+      }
     }
-  }, [boardConfig.numberOrder, onSegmentsChange]);
+  }, [boardConfig.numberOrder, onSegmentsChange, segments.length]);
 
   // Handle bullseye click - open configuration dialog
   const handleBullseyeClick = () => {
+    if (readOnly) return; // Don't open dialog in readOnly mode
     setBullseyeDialogOpen(true);
   };
 
   // Handle segment part click - open appropriate dialog based on segment part
   const handleSegmentPartClick = (id: number, part: 'outerRing' | 'doubleRing' | 'mainSegment' | 'tripleRing' | 'innerSegment') => {
+    if (readOnly) return; // Don't handle clicks in readOnly mode
+    
     const segment = segments.find(s => s.id === id);
     if (segment) {
       setSelectedSegment({ id, part, number: segment.number });
@@ -221,6 +241,7 @@ const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBulls
 
   // Handle outer ring state change
   const handleOuterRingStateChange = (id: number) => {
+    if (readOnly) return; // Don't handle state changes in readOnly mode
     setSegments(prevSegments => {
       const updatedSegments = prevSegments.map(segment => {
         if (segment.id === id) {
@@ -766,7 +787,12 @@ const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBulls
   });
 
   // Reset function to return dartboard to initial state
+  // Automatically saves current state to history before resetting
   const resetDartboard = useCallback(() => {
+    // Save current state to history before resetting
+    savePuzzle(segments, bullseye);
+    
+    // Reset to initial state
     const initialSegments = initializeDartBoardSegments(boardConfig.numberOrder);
     setSegments(initialSegments);
     
@@ -781,15 +807,30 @@ const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBulls
     if (onBullseyeChange) {
       onBullseyeChange(initialBullseye);
     }
-  }, [boardConfig.numberOrder, onSegmentsChange, onBullseyeChange]);
+  }, [boardConfig.numberOrder, onSegmentsChange, onBullseyeChange, segments, bullseye]);
+  
+  // Handle loading a puzzle from history
+  const handleLoadPuzzle = useCallback((savedSegments: DartBoardSegment[], savedBullseye: BullseyeState) => {
+    setSegments(savedSegments);
+    setBullseye(savedBullseye);
+    
+    // Notify parent components of the changes
+    if (onSegmentsChange) {
+      onSegmentsChange(savedSegments);
+    }
+    
+    if (onBullseyeChange) {
+      onBullseyeChange(savedBullseye);
+    }
+  }, [onSegmentsChange, onBullseyeChange]);
 
   return (
     <div className={styles.dartboardContainer}>
       <svg
         viewBox={`0 0 ${svgSize} ${svgSize}`}
-        width={svgSize}
-        height={svgSize}
-        className={styles.dartboard}
+        width={size || svgSize}
+        height={size || svgSize}
+        className={`${styles.dartboard} ${readOnly ? styles.readOnlyDartboard : ''}`}
       >
         {/* Background circle */}
         <circle
@@ -908,13 +949,25 @@ const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBulls
         })()}
       </svg>
       
-      <button 
-        className={styles.resetButton} 
-        onClick={resetDartboard}
-        aria-label="Reset dartboard"
-      >
-        Reset Dartboard
-      </button>
+      {/* Don't show buttons in readOnly mode */}
+      {!readOnly && (
+        <div className={styles.buttonContainer}>
+          <button 
+            className={styles.resetButton} 
+            onClick={resetDartboard}
+            aria-label="Reset dartboard"
+          >
+            Reset Dartboard
+          </button>
+          <button 
+            className={styles.historyButton} 
+            onClick={() => setHistoryBrowserOpen(true)}
+            aria-label="Open puzzle history"
+          >
+            History
+          </button>
+        </div>
+      )}
       
       {/* Bullseye configuration dialog */}
       <BullseyeDialog
@@ -927,6 +980,13 @@ const DartBoard: React.FC<DartBoardProps> = ({ config, onSegmentsChange, onBulls
             onBullseyeChange(newBullseyeState);
           }
         }}
+      />
+      
+      {/* History browser dialog */}
+      <HistoryBrowser
+        isOpen={historyBrowserOpen}
+        onClose={() => setHistoryBrowserOpen(false)}
+        onLoadPuzzle={handleLoadPuzzle}
       />
 
       {/* Segment configuration dialog */}
