@@ -60,13 +60,19 @@ function App() {
         </div>
           
         <div className="instructions-container">
-          <h2>How to use:</h2>
+          <h2>The Blue Prince: Billiards Room Dartboard Puzzle Guide</h2>
+          
+          <div className="game-context">
+            <p>This tool helps you solve the mathematical dartboard puzzles found in the Billiards Room of "The Blue Prince" video game. Understanding these puzzles is essential for progressing through this area of the game.</p>
+          </div>
+          
           <div className="instructions-grid">
             <div className="instruction-card">
               <div className="instruction-header">
                 <span className="step-number">1</span>
-                <h3>Click on dart segments to cycle through operations:</h3>
+                <h3>Understanding the Dartboard:</h3>
               </div>
+              <p>The dartboard consists of numbered segments, each divided into rings. Calculations always start from the center (0) and work outward.</p>
               <div className="operation-list">
                 <div className="operation operation-blue">
                   <div className="color-indicator blue-bg"></div>
@@ -90,57 +96,86 @@ function App() {
             <div className="instruction-card">
               <div className="instruction-header">
                 <span className="step-number">2</span>
-                <h3>Click on the outer ring for special modifiers:</h3>
+                <h3>Order of Operations:</h3>
               </div>
-              <div className="modifier-list">
-                <div className="modifier">
-                  <span className="modifier-symbol">✕</span>
-                  <span>Cross: Ignore all operations for this number</span>
-                </div>
-                <div className="modifier">
-                  <span className="modifier-symbol">/</span>
-                  <span>Diagonal Line: Divide the number by 2</span>
-                </div>
-                <div className="modifier">
-                  <span className="modifier-symbol">••</span>
-                  <span>Two Red Dots: Double the number</span>
-                </div>
-              </div>
+              <p>The Blue Prince puzzles follow a specific calculation order:</p>
+              <ol>
+                <li>Start with 0 at the center</li>
+                <li>Process inner ring segments first</li>
+                <li>Apply operations for all segments in that ring</li>
+                <li>Check if bullseye actions are triggered</li>
+                <li>Move to the next ring outward</li>
+                <li>Repeat until all active rings are processed</li>
+              </ol>
             </div>
             
             <div className="instruction-card">
               <div className="instruction-header">
                 <span className="step-number">3</span>
-                <h3>Work from innermost ring outward</h3>
+                <h3>Clicking on Segments:</h3>
               </div>
-              <p>Start with segments closest to the bullseye and move outward when calculating.</p>
+              <ul>
+                <li>Click on any segment ring to cycle through operations</li>
+                <li>Click the outer ring to cycle through special modifiers</li>
+                <li>Click the bullseye to set its color and special actions</li>
+              </ul>
             </div>
             
             <div className="instruction-card">
               <div className="instruction-header">
                 <span className="step-number">4</span>
-                <h3>Click on the bullseye for special actions:</h3>
+                <h3>Special Symbols and Their Effects:</h3>
               </div>
-              <div className="bullseye-actions">
-                <div className="bullseye-action">
-                  <span className="action-symbol">□</span>
-                  <span>Square: Square the result</span>
+              <p>These symbols can appear in both the outer ring (modifying segments) and the bullseye (affecting the running total):</p>
+              
+              <div className="symbol-list">
+                <div className="symbol-item">
+                  <span className="symbol">✕</span>
+                  <span><strong>Cross:</strong> When on outer ring - Ignore this segment's operations</span>
                 </div>
-                <div className="bullseye-action">
-                  <span className="action-symbol">◊</span>
-                  <span>Diamond: Flip/reverse the digits</span>
+                <div className="symbol-item">
+                  <span className="symbol">/</span>
+                  <span><strong>Diagonal Line:</strong> Divide by 2</span>
                 </div>
-                <div className="bullseye-action">
-                  <span className="action-symbol">≈</span>
-                  <span>Single Wave: Round to nearest 1</span>
+                <div className="symbol-item">
+                  <span className="symbol">••</span>
+                  <span><strong>Two Dots:</strong> Multiply by 2 before operation (outer ring) or repeat operation with value multiplied by 2 (bullseye)</span>
                 </div>
-                <div className="bullseye-action">
-                  <span className="action-symbol">≈≈</span>
-                  <span>Double Wave: Round to nearest 10</span>
+                <div className="symbol-item">
+                  <span className="symbol">•••</span>
+                  <span><strong>Three Dots:</strong> Multiply by 3 before operation/repeat</span>
                 </div>
-                <div className="bullseye-action">
-                  <span className="action-symbol">≈≈≈</span>
-                  <span>Triple Wave: Round to nearest 100</span>
+                <div className="symbol-item">
+                  <span className="symbol">••••</span>
+                  <span><strong>Four Dots:</strong> Multiply by 4 before operation/repeat</span>
+                </div>
+                <div className="symbol-item">
+                  <span className="symbol">□</span>
+                  <span><strong>Square:</strong> Square the number (n²)</span>
+                </div>
+                <div className="symbol-item">
+                  <span className="symbol">□□</span>
+                  <span><strong>Two Squares:</strong> Fourth power (n⁴)</span>
+                </div>
+                <div className="symbol-item">
+                  <span className="symbol">◊</span>
+                  <span><strong>Diamond:</strong> Reverse digits (e.g., 12.34 becomes 43.21)</span>
+                </div>
+                <div className="symbol-item">
+                  <span className="symbol">≈</span>
+                  <span><strong>Single Wave:</strong> Round to nearest 1</span>
+                </div>
+                <div className="symbol-item">
+                  <span className="symbol">≈≈</span>
+                  <span><strong>Double Wave:</strong> Round to nearest 10</span>
+                </div>
+                <div className="symbol-item">
+                  <span className="symbol">≈≈≈</span>
+                  <span><strong>Triple Wave:</strong> Round to nearest 100</span>
+                </div>
+                <div className="symbol-item">
+                  <span className="symbol">⅓</span>
+                  <span><strong>One-third Full:</strong> Divide by 3</span>
                 </div>
               </div>
             </div>
@@ -148,10 +183,76 @@ function App() {
             <div className="instruction-card">
               <div className="instruction-header">
                 <span className="step-number">5</span>
-                <h3>Choose a bullseye color matching an operation</h3>
+                <h3>Using Symbols:</h3>
               </div>
-              <p>The bullseye color should match a segment operation you've used</p>
+              <div className="usage-list">
+                <div className="usage-item">
+                  <h4>Outer Ring Modifiers:</h4>
+                  <p>Applied to segment numbers <em>before</em> performing operations. Click the outer ring to cycle through modifiers.</p>
+                </div>
+                <div className="usage-item">
+                  <h4>Bullseye Actions:</h4>
+                  <p>Applied to the running total <em>after</em> processing a ring containing a matching colored operation. The bullseye has both inner and outer actions that can be set separately.</p>
+                </div>
+              </div>
             </div>
+            
+            <div className="instruction-card">
+              <div className="instruction-header">
+                <span className="step-number">6</span>
+                <h3>Bullseye Colors:</h3>
+              </div>
+              <div className="bullseye-colors">
+                <p>The bullseye color determines which operations trigger special actions:</p>
+                <div className="bullseye-color">
+                  <div className="color-indicator blue-bg"></div>
+                  <span>Blue: Addition operations trigger bullseye actions</span>
+                </div>
+                <div className="bullseye-color">
+                  <div className="color-indicator yellow-bg"></div>
+                  <span>Yellow: Subtraction operations trigger bullseye actions</span>
+                </div>
+                <div className="bullseye-color">
+                  <div className="color-indicator pink-bg"></div>
+                  <span>Pink: Multiplication operations trigger bullseye actions</span>
+                </div>
+                <div className="bullseye-color">
+                  <div className="color-indicator purple-bg"></div>
+                  <span>Purple: Division operations trigger bullseye actions</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="instruction-card">
+              <div className="instruction-header">
+                <span className="step-number">7</span>
+                <h3>Advanced Features:</h3>
+              </div>
+              <ul>
+                <li><strong>Partial Segments:</strong> Segments can be partially shaded, using only 1/3 of their value</li>
+                <li><strong>Repeat Operations:</strong> Dot symbols multiply the operand before applying the operation</li>
+                <li><strong>Inner & Outer Bullseye:</strong> The bullseye has inner and outer actions that activate separately</li>
+                <li><strong>Share Button:</strong> Creates a URL to share your current dartboard configuration</li>
+              </ul>
+            </div>
+            
+            <div className="instruction-card">
+              <div className="instruction-header">
+                <span className="step-number">8</span>
+                <h3>Example Calculation from The Blue Prince:</h3>
+              </div>
+              <ol>
+                <li>Start with 0</li>
+                <li>Inner ring of segment 20 is blue (addition): 0 + 20 = 20</li>
+                <li>Inner ring of segment 5 is yellow with "••" (two dots) modifier: 20 - (5×2) = 20 - 10 = 10</li>
+                <li>If bullseye is yellow with "square" action: Subtraction triggers action, so 10² = 100</li>
+                <li>Move to next ring and continue calculations outward</li>
+              </ol>
+            </div>
+          </div>
+          
+          <div className="solver-tip">
+            <p>This solver follows the exact same rules as those in The Blue Prince game, helping you work out the solutions to the billiards room's dartboard puzzles without trial and error.</p>
           </div>
         </div>
 
