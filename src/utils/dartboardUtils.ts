@@ -70,38 +70,38 @@ export const formatNumber = (value: number): string => {
 };
 
 /**
- * Get standardized text for repeat operations
- * @param repeatCount The number of times to repeat the operation
+ * Get standardized text for multiply operations
+ * @param multiplyFactor The factor to multiply the number by
  * @param longForm Whether to return the full description (true) or short form (false)
- * @returns Standardized text for describing repeat operations
+ * @returns Standardized text for describing multiply operations
  */
-export const getRepeatOperationText = (repeatCount: number, longForm: boolean = false): string => {
-  if (repeatCount <= 1) return '';
+export const getRepeatOperationText = (multiplyFactor: number, longForm: boolean = false): string => {
+  if (multiplyFactor <= 1) return '';
   
   if (longForm) {
-    return `Repeat operation ${repeatCount} times sequentially`;
+    return `Multiply number by ${multiplyFactor}`;
   } else {
-    return `repeat operation ${repeatCount} times`;
+    return `multiply by ${multiplyFactor}`;
   }
 };
 
 /**
- * Apply an operation multiple times sequentially
- * First application uses the baseValue, then each repeat applies to the previous result
+ * Apply an operation with multiplied operand
+ * The operand is multiplied by the factor before applying the operation once
  * 
  * @param baseValue The initial value to apply operations to
  * @param operation The operation to apply (addition, subtraction, multiplication, division)
  * @param operand The value to use in the operation
- * @param repeatCount How many times to repeat the operation
+ * @param multiplyFactor The factor to multiply the operand by
  * @returns The final result and explanation steps
  */
 export const applyRepeatedOperation = (
   baseValue: number,
   operation: 'addition' | 'subtraction' | 'multiplication' | 'division' | null,
   operand: number,
-  repeatCount: number
+  multiplyFactor: number
 ): { result: number, steps: string[] } => {
-  if (repeatCount <= 0 || operation === null) {
+  if (multiplyFactor <= 0 || operation === null) {
     return { 
       result: baseValue,
       steps: []
@@ -111,18 +111,17 @@ export const applyRepeatedOperation = (
   const operationText = getOperationText(operation);
   const steps: string[] = [];
   
-  // First application
-  let currentResult = applyOperation(baseValue, operand, operation);
-  steps.push(`${formatNumber(baseValue)} ${operationText} ${formatNumber(operand)} = ${formatNumber(currentResult)}`);
+  // Multiply the operand by the factor
+  const multipliedOperand = operand * multiplyFactor;
   
-  // Apply additional repetitions if needed
-  if (repeatCount > 1) {
-    for (let i = 1; i < repeatCount; i++) {
-      const prevResult = currentResult;
-      currentResult = applyOperation(prevResult, operand, operation);
-      
-      steps.push(`Repeat ${i+1} of ${repeatCount}: ${formatNumber(prevResult)} ${operationText} ${formatNumber(operand)} = ${formatNumber(currentResult)}`);
-    }
+  // Apply the operation once with the multiplied operand
+  let currentResult = applyOperation(baseValue, multipliedOperand, operation);
+  
+  if (multiplyFactor > 1) {
+    steps.push(`${formatNumber(operand)} × ${multiplyFactor} = ${formatNumber(multipliedOperand)}`);
+    steps.push(`${formatNumber(baseValue)} ${operationText} ${formatNumber(multipliedOperand)} = ${formatNumber(currentResult)}`);
+  } else {
+    steps.push(`${formatNumber(baseValue)} ${operationText} ${formatNumber(operand)} = ${formatNumber(currentResult)}`);
   }
   
   return { result: currentResult, steps };

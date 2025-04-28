@@ -12,6 +12,11 @@ import {
   calcY
 } from '../../utils/dartboardUtils';
 import { savePuzzle } from '../../utils/storageUtils';
+import {
+  getPuzzleFromUrl,
+  updateBrowserUrl,
+  clearUrlParameters
+} from '../../utils/urlUtils';
 import styles from './DartBoard.module.css';
 import BullseyeDialog from '../BullseyeDialog/BullseyeDialog';
 import SegmentDialog from '../SegmentDialog/SegmentDialog';
@@ -156,20 +161,18 @@ const DartBoard: React.FC<DartBoardProps> = ({
       const urlParams = new URLSearchParams(window.location.search);
       
       if (urlParams.has('s') || urlParams.has('b')) {
-        import('../../utils/urlUtils').then(({ getPuzzleFromUrl }) => {
-          const puzzleFromUrl = getPuzzleFromUrl(boardConfig.numberOrder);
+        const puzzleFromUrl = getPuzzleFromUrl(boardConfig.numberOrder);
+        
+        if (puzzleFromUrl) {
+          console.log('✅ DartBoard - Found puzzle in URL, loading state');
+          setSegments(puzzleFromUrl.segments);
+          setBullseye(puzzleFromUrl.bullseye);
           
-          if (puzzleFromUrl) {
-            console.log('✅ DartBoard - Found puzzle in URL, loading state');
-            setSegments(puzzleFromUrl.segments);
-            setBullseye(puzzleFromUrl.bullseye);
-            
-            // Notify parent component of the loaded state
-            if (onSegmentsChange) onSegmentsChange(puzzleFromUrl.segments);
-            if (onBullseyeChange) onBullseyeChange(puzzleFromUrl.bullseye);
-            return;
-          }
-        });
+          // Notify parent component of the loaded state
+          if (onSegmentsChange) onSegmentsChange(puzzleFromUrl.segments);
+          if (onBullseyeChange) onBullseyeChange(puzzleFromUrl.bullseye);
+          return;
+        }
       }
     }
     
@@ -188,9 +191,7 @@ const DartBoard: React.FC<DartBoardProps> = ({
   // Update URL when state changes, if URL sharing is enabled
   useEffect(() => {
     if (enableUrlSharing && segments.length > 0) {
-      import('../../utils/urlUtils').then(({ updateBrowserUrl }) => {
-        updateBrowserUrl(segments, bullseye);
-      });
+      updateBrowserUrl(segments, bullseye);
     }
   }, [segments, bullseye, enableUrlSharing]);
 
@@ -576,7 +577,7 @@ const DartBoard: React.FC<DartBoardProps> = ({
                 y={0}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                style={{ fontSize: '18px', fill: 'white' }}
+                style={{ fontSize: '18px', fill: 'red', fontWeight: 'bold' }}
               >
                 □
               </text>
@@ -591,7 +592,7 @@ const DartBoard: React.FC<DartBoardProps> = ({
                 y={0}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                style={{ fontSize: '18px', fill: 'white' }}
+                style={{ fontSize: '18px', fill: 'red', fontWeight: 'bold' }}
               >
                 □□
               </text>
@@ -606,7 +607,7 @@ const DartBoard: React.FC<DartBoardProps> = ({
                 y={0}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                style={{ fontSize: '18px', fill: 'white' }}
+                style={{ fontSize: '18px', fill: 'red', fontWeight: 'bold' }}
               >
                 ◊
               </text>
@@ -621,7 +622,7 @@ const DartBoard: React.FC<DartBoardProps> = ({
                 y={0}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                style={{ fontSize: '18px', fill: 'white' }}
+                style={{ fontSize: '18px', fill: 'red', fontWeight: 'bold' }}
               >
                 ≈
               </text>
@@ -636,7 +637,7 @@ const DartBoard: React.FC<DartBoardProps> = ({
                 y={0}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                style={{ fontSize: '16px', fill: 'white' }}
+                style={{ fontSize: '16px', fill: 'red', fontWeight: 'bold' }}
               >
                 ≈≈
               </text>
@@ -651,7 +652,7 @@ const DartBoard: React.FC<DartBoardProps> = ({
                 y={0}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                style={{ fontSize: '14px', fill: 'white' }}
+                style={{ fontSize: '14px', fill: 'red', fontWeight: 'bold' }}
               >
                 ≈≈≈
               </text>
@@ -666,7 +667,7 @@ const DartBoard: React.FC<DartBoardProps> = ({
                 y={0}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                style={{ fontSize: '18px', fill: 'white' }}
+                style={{ fontSize: '18px', fill: 'red', fontWeight: 'bold' }}
               >
                 ⅓
               </text>
@@ -859,9 +860,7 @@ const DartBoard: React.FC<DartBoardProps> = ({
     
     // Clear URL parameters if URL sharing is enabled
     if (enableUrlSharing) {
-      import('../../utils/urlUtils').then(({ clearUrlParameters }) => {
-        clearUrlParameters();
-      });
+      clearUrlParameters();
     }
     
     // Notify parent components of the changes
