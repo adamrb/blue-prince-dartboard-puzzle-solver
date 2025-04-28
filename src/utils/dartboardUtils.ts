@@ -79,21 +79,21 @@ export const getRepeatOperationText = (repeatCount: number, longForm: boolean = 
   if (repeatCount <= 1) return '';
   
   if (longForm) {
-    return `Perform operation ${repeatCount} times independently and sum results`;
+    return `Repeat operation ${repeatCount} times sequentially`;
   } else {
-    return `perform ${repeatCount} times and sum`;
+    return `repeat operation ${repeatCount} times`;
   }
 };
 
 /**
- * Apply an operation multiple times and sum the results
- * Each repetition starts from the same base value and the results are summed at the end
+ * Apply an operation multiple times sequentially
+ * First application uses the baseValue, then each repeat applies to the previous result
  * 
  * @param baseValue The initial value to apply operations to
  * @param operation The operation to apply (addition, subtraction, multiplication, division)
  * @param operand The value to use in the operation
  * @param repeatCount How many times to repeat the operation
- * @returns The summed result and explanation steps
+ * @returns The final result and explanation steps
  */
 export const applyRepeatedOperation = (
   baseValue: number,
@@ -101,32 +101,31 @@ export const applyRepeatedOperation = (
   operand: number,
   repeatCount: number
 ): { result: number, steps: string[] } => {
-  if (repeatCount <= 1 || operation === null) {
-    // If no repetition needed or no operation specified, just apply once
-    const result = applyOperation(baseValue, operand, operation);
+  if (repeatCount <= 0 || operation === null) {
     return { 
-      result,
-      steps: [`${formatNumber(baseValue)} ${getOperationText(operation)} ${formatNumber(operand)} = ${formatNumber(result)}`]
+      result: baseValue,
+      steps: []
     };
   }
   
   const operationText = getOperationText(operation);
   const steps: string[] = [];
-  const results: number[] = [];
   
-  // Apply the operation independently for each repetition
-  for (let i = 0; i < repeatCount; i++) {
-    const result = applyOperation(baseValue, operand, operation);
-    results.push(result);
-    
-    steps.push(`Repeat ${i+1}/${repeatCount}: ${formatNumber(baseValue)} ${operationText} ${formatNumber(operand)} = ${formatNumber(result)}`);
+  // First application
+  let currentResult = applyOperation(baseValue, operand, operation);
+  steps.push(`${formatNumber(baseValue)} ${operationText} ${formatNumber(operand)} = ${formatNumber(currentResult)}`);
+  
+  // Apply additional repetitions if needed
+  if (repeatCount > 1) {
+    for (let i = 1; i < repeatCount; i++) {
+      const prevResult = currentResult;
+      currentResult = applyOperation(prevResult, operand, operation);
+      
+      steps.push(`Repeat ${i+1} of ${repeatCount}: ${formatNumber(prevResult)} ${operationText} ${formatNumber(operand)} = ${formatNumber(currentResult)}`);
+    }
   }
   
-  // Sum all the results
-  const summedResult = results.reduce((sum, value) => sum + value, 0);
-  steps.push(`Sum of repeats: ${results.map(r => formatNumber(r)).join(' + ')} = ${formatNumber(summedResult)}`);
-  
-  return { result: summedResult, steps };
+  return { result: currentResult, steps };
 };
 
 /**
