@@ -3,15 +3,16 @@ import './App.css';
 import DartBoard from './components/DartBoard/DartBoard';
 import PuzzleSolver from './components/PuzzleSolver/PuzzleSolver';
 import { DartBoardConfig, DartBoardSegment, BullseyeState } from './types/DartBoard';
+import ShareButton from './components/ShareButton/ShareButton';
 import { initializeBullseyeState } from './utils/dartboardUtils';
 
 function App() {
-  // State for segments and bullseye
+  // State for segments and bullseye - initially empty, will be populated by DartBoard
   const [segments, setSegments] = useState<DartBoardSegment[]>([]);
   const [bullseye, setBullseye] = useState<BullseyeState>(initializeBullseyeState());
   
-  // Default ring widths as percentages of the board radius
-  const [ringWidths] = useState({
+  // Ring widths configuration
+  const ringWidths = {
     outerRing: 10,     // 5% of radius for outer clickable ring
     numberRing: 30,   // 17% of radius for number ring
     doubleRing: 6,    // 6% of radius for double scoring
@@ -20,11 +21,6 @@ function App() {
     innerSegment: 30, // 30% of radius for inner segment
     bullseye: 12,     // 12% of radius for bullseye
     bullseyeBorder: 10 // 10% of bullseye width is the border
-  });
-
-  // Create dartboard configuration
-  const dartboardConfig: Partial<DartBoardConfig> = {
-    ringWidths
   };
 
   return (
@@ -37,15 +33,18 @@ function App() {
         
         <div className="main-content">
           <div className="dartboard-section">
+            {/* DartBoard is the source of truth - it handles URL params internally */}
             <DartBoard 
-              config={dartboardConfig} 
+              config={{ ringWidths }} 
               onSegmentsChange={setSegments} 
               onBullseyeChange={setBullseye}
+              enableUrlSharing={true}
             />
           </div>
           
           <div className="puzzle-solver-section">
             <PuzzleSolver segments={segments} bullseye={bullseye} />
+            <ShareButton segments={segments} bullseye={bullseye} />
           </div>
         </div>
         

@@ -26,6 +26,7 @@ interface DartBoardProps {
   size?: number; // Optional size override for the dartboard (in pixels)
   segments?: DartBoardSegment[]; // Initial segments (optional)
   bullseye?: BullseyeState; // Initial bullseye state (optional)
+  enableUrlSharing?: boolean; // When true, updates URL and reads from URL params
 }
 
 const DEFAULT_CONFIG: DartBoardConfig = {
@@ -53,7 +54,8 @@ const DartBoard: React.FC<DartBoardProps> = ({
   readOnly = false,
   size,
   segments: initialSegments, 
-  bullseye: initialBullseye
+  bullseye: initialBullseye,
+  enableUrlSharing = false
 }) => {
   const boardConfig = { ...DEFAULT_CONFIG, ...config };
   const [segments, setSegments] = useState<DartBoardSegment[]>(initialSegments || []);
@@ -146,17 +148,73 @@ const DartBoard: React.FC<DartBoardProps> = ({
   
   const svgSize = boardConfig.boardRadius * 2;
 
-  // Initialize segments on component mount if no initial segments provided
+  // Initialize segments on component mount
   useEffect(() => {
+    // If URL sharing is enabled, try to load from URL first
+    if (enableUrlSharing) {
+      console.log('🔍 DartBoard - Checking URL for puzzle parameters');
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      if (urlParams.has('s') || urlParams.has('b')) {
+        import('../../utils/urlUtils').then(({ getPuzzleFromUrl }) => {
+          const puzzleFromUrl = getPuzzleFromUrl(boardConfig.numberOrder);
+          
+          if (puzzleFromUrl) {
+            console.log('✅ DartBoard - Found puzzle in URL, loading state');
+            setSegments(puzzleFromUrl.segments);
+            setBullseye(puzzleFromUrl.bullseye);
+            
+            // Notify parent component of the loaded state
+            if (onSegmentsChange) onSegmentsChange(puzzleFromUrl.segments);
+            if (onBullseyeChange) onBullseyeChange(puzzleFromUrl.bullseye);
+            return;
+          }
+        });
+      }
+    }
+    
+    // Otherwise initialize from props or default if needed
     if (segments.length === 0) {
       const newSegments = initializeDartBoardSegments(boardConfig.numberOrder);
       setSegments(newSegments);
+      
       // Notify parent of initial state
       if (onSegmentsChange) {
         onSegmentsChange(newSegments);
       }
     }
-  }, [boardConfig.numberOrder, onSegmentsChange, segments.length]);
+  }, [boardConfig.numberOrder, enableUrlSharing, onSegmentsChange, onBullseyeChange, segments.length]);
+
+  // Update URL when state changes, if URL sharing is enabled
+  useEffect(() => {
+    if (enableUrlSharing && segments.length > 0) {
+      import('../../utils/urlUtils').then(({ updateBrowserUrl }) => {
+        updateBrowserUrl(segments, bullseye);
+      });
+    }
+  }, [segments, bullseye, enableUrlSharing]);
+
+  // Sync internal segments state with prop changes
+  useEffect(() => {
+    if (initialSegments && initialSegments.length > 0) {
+      // Only update if the state would actually change
+      if (JSON.stringify(initialSegments) !== JSON.stringify(segments)) {
+        console.log('📊 DartBoard - Updating segments from props');
+        setSegments(initialSegments);
+      }
+    }
+  }, [initialSegments]);
+  
+  // Sync internal bullseye state with prop changes (for URL loading)
+  useEffect(() => {
+    if (initialBullseye) {
+      // Only update if the state would actually change
+      if (JSON.stringify(initialBullseye) !== JSON.stringify(bullseye)) {
+        console.log('🎯 DartBoard - Updating bullseye from props');
+        setBullseye(initialBullseye);
+      }
+    }
+  }, [initialBullseye]);
 
   // Handle bullseye click - open configuration dialog
   const handleBullseyeClick = () => {
@@ -799,6 +857,13 @@ const DartBoard: React.FC<DartBoardProps> = ({
     const initialBullseye = initializeBullseyeState();
     setBullseye(initialBullseye);
     
+    // Clear URL parameters if URL sharing is enabled
+    if (enableUrlSharing) {
+      import('../../utils/urlUtils').then(({ clearUrlParameters }) => {
+        clearUrlParameters();
+      });
+    }
+    
     // Notify parent components of the changes
     if (onSegmentsChange) {
       onSegmentsChange(initialSegments);
@@ -807,7 +872,7 @@ const DartBoard: React.FC<DartBoardProps> = ({
     if (onBullseyeChange) {
       onBullseyeChange(initialBullseye);
     }
-  }, [boardConfig.numberOrder, onSegmentsChange, onBullseyeChange, segments, bullseye]);
+  }, [boardConfig.numberOrder, enableUrlSharing, onSegmentsChange, onBullseyeChange, segments, bullseye]);
   
   // Handle loading a puzzle from history
   const handleLoadPuzzle = useCallback((savedSegments: DartBoardSegment[], savedBullseye: BullseyeState) => {
