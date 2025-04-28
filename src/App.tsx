@@ -2,7 +2,7 @@ import { useState } from 'react';
 import './App.css';
 import DartBoard from './components/DartBoard/DartBoard';
 import PuzzleSolver from './components/PuzzleSolver/PuzzleSolver';
-import { DartBoardConfig, DartBoardSegment, BullseyeState } from './types/DartBoard';
+import { DartBoardSegment, BullseyeState } from './types/DartBoard';
 import ShareButton from './components/ShareButton/ShareButton';
 import { initializeBullseyeState } from './utils/dartboardUtils';
 
